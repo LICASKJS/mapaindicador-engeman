@@ -1,17 +1,32 @@
 const FILES = {
-  homolog: 'fornecedores_homologados.xlsx',
-  iqf: 'atendimento controle_qualidade.xlsx'
+  homolog: 'dados/fornecedores_homologados.xlsx',
+  iqf: 'dados/atendimento controle_qualidade.xlsx'
 };
 
 const SCORE_THRESHOLD = 70;
 const MAX_CHAT_HISTORY = 6;
 const dateFilter = { day: null, month: null, year: null };
 
+const RECURRENCE_IGNORE_SUBJECTS = new Set([
+  'bom fornecedor',
+  'bom atendimento',
+  'atendimento bom',
+  'atende a expectativa',
+  'atende as expectativas',
+  'atende expectativa',
+  'atende expecativa',
+  'sem comentarios',
+  'sem comentario'
+]);
+const RECURRENCE_STOP_WORDS = new Set(['', 'de', 'da', 'do', 'das', 'dos', 'para', 'por', 'com', 'sem', 'uma', 'um', 'no', 'na', 'nos', 'nas', 'ao', 'a', 'e', 'em', 'sobre']);
+
 const state = {
   homolog: [],
   iqf: [],
   combined: [],
   occ: [],
+  recurrence: [],
+  recurrenceFilter: '',
   missing: [],
   iqfFiltered: null,
   occFiltered: null,
@@ -154,27 +169,26 @@ function buildState() {
       const byCode = h.code ? index.get('code:' + h.code) : null;
       const byName = h.name ? index.get('name:' + normalizeText(h.name)) : null;
       const bucket = byCode || byName;
-      if (!bucket || bucket.count === 0) {
-        missing.push({ code: h.code, name: h.name, status: h.status, score: h.score });
-        return null;
-      }
-      const iqfAverage = roundValue(bucket.sum / bucket.count);
+      const iqfSamples = bucket?.count || 0;
+      const iqfAverage = iqfSamples ? roundValue(bucket.sum / bucket.count) : null;
       const homologScore = roundValue(h.score);
+      if (!iqfSamples) {
+        missing.push({ code: h.code, name: h.name, status: h.status, score: homologScore });
+      }
       const status = deriveStatus(h.status, iqfAverage, homologScore);
       return {
         code: h.code,
-        name: bucket.name || h.name,
+        name: (bucket && bucket.name) || h.name,
         status,
         statusBase: h.status,
         homolog: homologScore,
         iqf: iqfAverage,
         expire: h.expire,
-        iqfSamples: bucket.count,
-        lastIqf: bucket.last,
-        document: bucket.doc
+        iqfSamples,
+        lastIqf: (bucket && bucket.last) || null,
+        document: (bucket && bucket.doc) || ''
       };
     })
-    .filter(Boolean)
     .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' }));
 
   state.missing = missing;
@@ -246,17 +260,17 @@ function getFilteredOccurrences() {
 
 function getGaugePalette(value) {
   if (value >= 85) {
-    return ['#3d80cdff', '#0f172a1a'];
+  return ['#104585f8'];
   }
   if (value >= SCORE_THRESHOLD) {
-    return ['#facc15', '#0f172a1a'];
+    return ['#b17919ff', '#b45309'];
   }
-  return ['#ef4444', '#0f172a1a'];
+  return ['#dc2626', '#7f1d1d'];
 }
 
-function lightenColor(hex, alpha = 0.6) {
+function lightenColor(hex, alpha = 0.8) {
   const sanitized = (hex || '').replace('#', '');
-  if (sanitized.length !== 6) {
+  if (sanitized.length !== 7) {
     return hex;
   }
   const r = parseInt(sanitized.slice(0, 2), 16);
@@ -341,10 +355,7 @@ function bindControls() {
 
   const occSearch = document.getElementById('occurrenceSearch');
   if (occSearch) {
-    occSearch.addEventListener('input', () => {
-      renderOccTable();
-      renderOccStats();
-    });
+    occSearch.addEventListener('input', renderOccTable);
   }
 
   const chatPanel = document.getElementById('aiChatPanel');
@@ -380,6 +391,11 @@ function bindControls() {
         localStorage.setItem('openaiKey', keyInput.value.trim());
       });
     }
+  }
+
+  const recurrenceFilter = document.getElementById('recurrenceSupplierFilter');
+  if (recurrenceFilter) {
+    recurrenceFilter.addEventListener('change', handleRecurrenceFilterChange);
   }
 }
 
@@ -506,8 +522,8 @@ function renderStatusChart() {
     return gradient;
   };
   const palette = [
-    normalizeGradient('#22c55e', '#16a34a'),
-    normalizeGradient('#f87171', '#ef4444')
+    normalizeGradient('#0072ff', '#2c3e50'),
+    normalizeGradient('#b34700', '#ff6600')
   ];
   const centerLabelPlugin = {
     id: 'statusCenterLabel',
@@ -520,11 +536,11 @@ function renderStatusChart() {
       const { ctx: drawCtx } = chart;
       drawCtx.save();
       drawCtx.font = '700 20px "Inter", sans-serif';
-      drawCtx.fillStyle = '#0f172a';
+      drawCtx.fillStyle = '#0f2027';
       drawCtx.textAlign = 'center';
       drawCtx.fillText(String(total), x, y - 4);
       drawCtx.font = '500 11px "Inter", sans-serif';
-      drawCtx.fillStyle = '#64748b';
+      drawCtx.fillStyle = '#566c8dff';
       drawCtx.fillText('Total', x, y + 12);
       drawCtx.restore();
     }
@@ -724,15 +740,15 @@ function renderTrendChart() {
         {
           label: 'Media IQF',
           data: values,
-          borderColor: '#0ea5e9',
+          borderColor: '#2193b0',
           borderWidth: 3,
           backgroundColor: gradient,
           tension: 0.35,
           fill: true,
           pointRadius: 3,
           pointHoverRadius: 6,
-          pointBackgroundColor: '#0ea5e9',
-          pointBorderColor: '#0ea5e9'
+          pointBackgroundColor: '#2193b0',
+          pointBorderColor: '#2193b0'
         }
       ]
     },
@@ -905,7 +921,6 @@ function renderIqfChart() {
 
 function renderOccurrencesPage() {
   renderOccTable();
-  renderOccStats();
 }
 
 function renderOccTable() {
@@ -914,7 +929,7 @@ function renderOccTable() {
     return;
   }
   const term = normalizeText(document.getElementById('occurrenceSearch')?.value || '');
-  const rows = state.occ.filter((row) => {
+  const baseRows = state.occ.filter((row) => {
     if (!matchesDate(row.date)) {
       return false;
     }
@@ -923,9 +938,25 @@ function renderOccTable() {
     }
     return true;
   });
+  let recurrenceKey = state.recurrenceFilter;
+  if (recurrenceKey && !baseRows.some((row) => normalizeSupplierKey(row.name) === recurrenceKey)) {
+    recurrenceKey = '';
+    state.recurrenceFilter = '';
+    const select = document.getElementById('recurrenceSupplierFilter');
+    if (select) {
+      select.value = '';
+    }
+  }
+  const rows = baseRows.filter((row) => {
+    if (recurrenceKey && normalizeSupplierKey(row.name) !== recurrenceKey) {
+      return false;
+    }
+    return true;
+  });
   state.occFiltered = rows;
   if (!rows.length) {
     body.innerHTML = '<tr><td colspan="3">Nenhuma ocorrencia encontrada.</td></tr>';
+    renderRecurrenceSection();
     return;
   }
   body.innerHTML = rows
@@ -937,47 +968,230 @@ function renderOccTable() {
         '</tr>';
     })
     .join('');
+  renderRecurrenceSection(baseRows);
 }
 
-function renderOccStats() {
-  const rows = Array.isArray(state.occFiltered) ? state.occFiltered : state.occ;
-  const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+function renderRecurrenceSection(rowsSource) {
+  const rows = Array.isArray(rowsSource)
+    ? rowsSource
+    : (Array.isArray(state.occFiltered) ? state.occFiltered : state.occ);
+  const recurrenceData = buildRecurrenceData(rows);
+  state.recurrence = recurrenceData;
+  populateRecurrenceFilter(recurrenceData);
+  renderRecurrenceChart(recurrenceData);
+  renderRecurrenceDetails();
+}
+
+function shouldIgnoreRecurrenceSubject(subjectKey) {
+  if (!subjectKey) {
+    return true;
+  }
+  for (const ignore of RECURRENCE_IGNORE_SUBJECTS) {
+    if (subjectKey === ignore || subjectKey.includes(ignore)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function normalizeRecurrenceSubject(subject) {
+  const normalized = normalizeText(subject).replace(/\s+/g, ' ').trim();
+  if (!normalized) {
+    return '';
+  }
+  const tokens = normalized
+    .split(' ')
+    .filter((token) => token.length > 2 && !RECURRENCE_STOP_WORDS.has(token));
+  return tokens.join(' ') || normalized;
+}
+
+function normalizeSupplierKey(name) {
+  return normalizeText(name || '').replace(/\s+/g, ' ').trim();
+}
+
+function buildRecurrenceData(rows) {
+  const suppliers = new Map();
   rows.forEach((row) => {
-    counts[row.severity] = (counts[row.severity] || 0) + 1;
+    const supplierName = safeString(row.name);
+    const subject = safeString(row.occ);
+    if (!supplierName || !subject) {
+      return;
+    }
+    const supplierKey = normalizeSupplierKey(supplierName);
+    if (!supplierKey) {
+      return;
+    }
+    const subjectKey = normalizeRecurrenceSubject(subject);
+    if (!subjectKey || shouldIgnoreRecurrenceSubject(subjectKey)) {
+      return;
+    }
+    if (!suppliers.has(supplierKey)) {
+      suppliers.set(supplierKey, { name: supplierName, subjects: new Map() });
+    }
+    const supplier = suppliers.get(supplierKey);
+    if (!supplier.subjects.has(subjectKey)) {
+      supplier.subjects.set(subjectKey, { label: subject.trim(), count: 0 });
+    }
+    const subjectEntry = supplier.subjects.get(subjectKey);
+    subjectEntry.count += 1;
+    if (!subjectEntry.label) {
+      subjectEntry.label = subject.trim();
+    }
   });
-  setText('criticalOccurrences', String(counts.critical || 0));
-  setText('highOccurrences', String(counts.high || 0));
-  setText('mediumOccurrences', String(counts.medium || 0));
-  setText('lowOccurrences', String(counts.low || 0));
-  renderOccChart(counts);
+  const recurrence = [];
+  suppliers.forEach((supplier, supplierKey) => {
+    const topics = [];
+    supplier.subjects.forEach((subject) => {
+      if (subject.count >= 2) {
+        topics.push(subject.label + ' (' + subject.count + 'x)');
+      }
+    });
+    if (topics.length) {
+      recurrence.push({ supplier: supplier.name, key: supplierKey, total: topics.length, topics });
+    }
+  });
+  return recurrence.sort((a, b) => {
+    if (b.total === a.total) {
+      return a.supplier.localeCompare(b.supplier, 'pt-BR', { sensitivity: 'base' });
+    }
+    return b.total - a.total;
+  });
 }
 
-function renderOccChart(counts) {
-  const canvas = document.getElementById('occurrencesChart');
+function renderRecurrenceChart(data) {
+  const canvas = document.getElementById('recurrenceChart');
+  const emptyState = document.getElementById('recurrenceEmptyState');
   if (!canvas || typeof Chart === 'undefined') {
     return;
   }
+  if (!data.length) {
+    if (charts.occ) {
+      charts.occ.destroy();
+      charts.occ = null;
+    }
+    canvas.style.display = 'none';
+    if (emptyState) {
+      emptyState.classList.add('active');
+    }
+    return;
+  }
+  canvas.style.display = 'block';
+  if (emptyState) {
+    emptyState.classList.remove('active');
+  }
+  const filteredData = state.recurrenceFilter ? data.filter((item) => item.key === state.recurrenceFilter) : data.slice(0, 8);
+  const targetData = filteredData.length ? filteredData : data.slice(0, 8);
+  const labels = targetData.map((item) => item.supplier);
+  const values = targetData.map((item) => item.total);
   if (charts.occ) {
     charts.occ.destroy();
   }
-  charts.occ = new Chart(canvas.getContext('2d'), {
+  const ctx = canvas.getContext('2d');
+  charts.occ = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Critica', 'Alta', 'Media', 'Baixa'],
+      labels,
       datasets: [
         {
-          data: [counts.critical, counts.high, counts.medium, counts.low],
-          backgroundColor: ['#ef4444', '#f97316', '#facc15', '#22c55e']
+          label: 'Reincidencias',
+          data: values,
+          backgroundColor: ' #e26126ff',
+          borderRadius: 8,
+          borderSkipped: false
         }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: { y: { beginAtZero: true } }
+      scales: {
+        x: {
+          ticks: {
+            color: 'var(--text-secondary)',
+            autoSkip: false,
+            maxRotation: 45,
+            minRotation: 0
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1,
+            color: 'var(--text-secondary)'
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (context) => 'Reincidencias: ' + context.parsed.y,
+            afterLabel: (context) => {
+              const topics = targetData[context.dataIndex]?.topics || [];
+              return topics.length ? 'Topicos: ' + topics.join(', ') : '';
+            }
+          }
+        }
+      }
     }
   });
+}
+
+function populateRecurrenceFilter(data) {
+  const select = document.getElementById('recurrenceSupplierFilter');
+  if (!select) {
+    state.recurrenceFilter = '';
+    return;
+  }
+  if (!data.length) {
+    select.innerHTML = '<option value="">Nenhuma reincidencia detectada</option>';
+    select.disabled = true;
+    select.value = '';
+    state.recurrenceFilter = '';
+    return;
+  }
+  const options = data
+    .map((item) => {
+      return '<option value="' + escapeHtml(item.key) + '">' + escapeHtml(item.supplier) + ' (' + item.total + ')</option>';
+    })
+    .join('');
+  select.innerHTML = '<option value="">Todos os reincidentes</option>' + options;
+  select.disabled = false;
+  if (state.recurrenceFilter && !data.some((item) => item.key === state.recurrenceFilter)) {
+    state.recurrenceFilter = '';
+  }
+  select.value = state.recurrenceFilter;
+}
+
+function renderRecurrenceDetails() {
+  const container = document.getElementById('recurrenceTopics');
+  if (!container) {
+    return;
+  }
+  if (!state.recurrence.length) {
+    container.innerHTML = '<p class="recurrence-topics-empty">Nenhuma reincidencia encontrada para os filtros aplicados.</p>';
+    return;
+  }
+  if (!state.recurrenceFilter) {
+    container.innerHTML = '<p class="recurrence-topics-empty">Selecione um fornecedor reincidente para explorar os assuntos recorrentes.</p>';
+    return;
+  }
+  const supplier = state.recurrence.find((item) => item.key === state.recurrenceFilter);
+  if (!supplier) {
+    container.innerHTML = '<p class="recurrence-topics-empty">Selecao invalida. Escolha outro fornecedor.</p>';
+    return;
+  }
+  const topics = supplier.topics
+    .map((topic) => '<li>' + escapeHtml(topic) + '</li>')
+    .join('');
+  container.innerHTML =
+    '<h4>Assuntos reincidentes de ' + escapeHtml(supplier.supplier) + '</h4>' +
+    '<ul class="recurrence-topics-list">' + topics + '</ul>';
+}
+
+function handleRecurrenceFilterChange(event) {
+  state.recurrenceFilter = event.target.value || '';
+  renderOccTable();
 }
 
 function exportIQFData() {
@@ -1159,7 +1373,6 @@ function buildChatContext() {
   const total = state.combined.length;
   const homologados = state.combined.filter((row) => row.status === 'Homologado').length;
   const reprovados = state.combined.filter((row) => row.status === 'Reprovado').length;
-  const pendentes = state.combined.filter((row) => row.status === 'Pendente').length;
   const mediaIqf = avg(state.combined.map((row) => row.iqf));
   const mediaHom = avg(state.combined.map((row) => row.homolog));
   const top = state.combined
@@ -1168,7 +1381,7 @@ function buildChatContext() {
     .slice(0, 5)
     .map((row) => ({ fornecedor: row.name, iqf: row.iqf, homolog: row.homolog, status: row.status, vencimento: row.expire }));
   const faltantes = state.missing.slice(0, 10).map((item) => item.name || item.code);
-  return JSON.stringify({ total, homologados, reprovados, pendentes, mediaIqf, mediaHom, top, faltantes });
+  return JSON.stringify({ total, homologados, reprovados, mediaIqf, mediaHom, top, faltantes });
 }
 
 function showLoading(show) {

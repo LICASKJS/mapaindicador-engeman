@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="img/ico.png" type="image/x-icon">
+    <title>Central de Avaliação - Mapa indicador de Suprimentos</title>
+    <link rel="stylesheet" href="css/analise.css">
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-container">
+            <div class="logo-loading">
+                <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <rect class="rect-1" x="140" y="80" width="310" height="90" rx="15" fill="#FF5722"/>
+                    <rect class="rect-2" x="90" y="210" width="310" height="90" rx="15" fill="#FF5722"/>
+                    <rect class="rect-3" x="40" y="340" width="310" height="90" rx="15" fill="#4A5568"/>
+                </svg>
+            </div>
+            <div class="loading-text">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-wrapper" id="chatWrapper">
+        <div class="chat-header">
+            <div class="logo-container">
+                <svg class="logo-chat" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="140" y="80" width="310" height="90" rx="15" fill="#FF5722"/>
+                    <rect x="90" y="210" width="310" height="90" rx="15" fill="#FF5722"/>
+                    <rect x="40" y="340" width="310" height="90" rx="15" fill="#4A5568"/>
+                </svg>
+            </div>
+            <div class="header-info">
+                <h1>ENGEMAN</h1>
+                <p>Central de Avaliação de Fornecedores</p>
+            </div>
+        </div>
+        <div class="messages-container" id="messagesContainer">
+            <div class="message bot-message">
+                <div class="message-content">
+                    <p>👋 Olá! Bem-vindo à Central de Avaliação de Fornecedores da <span class="span-color">ENGEMAN.</span> Como posso ajudá-lo?</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input 
+                type="text" 
+                id="userInput" 
+                class="chat-input" 
+                placeholder="Digite sua mensagem"
+                autocomplete="off"
+            >
+            <button class="send-btn" id="sendBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="bubbles-container">
+        <div class="bubble bubble-1"></div>
+        <div class="bubble bubble-2"></div>
+        <div class="bubble bubble-3"></div>
+        <div class="bubble bubble-4"></div>
+        <div class="bubble bubble-5"></div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/chatbot.js"></script>
+</body>
+</html>
