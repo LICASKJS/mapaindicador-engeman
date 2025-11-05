@@ -878,10 +878,10 @@ function generateSupplierFeedback(supplier, container) {
       subtitle: 'Resumo gerado com dados do IQF',
       icon: '??',
       bodyHtml: baselineHtml,
-      hint: 'Informe a chave da API OpenAI no campo acima do chat para complementar a analise automaticamente.'
+      hint: 'Informe a chave da API OpenAI no painel de configuracoes (icone de engrenagem) para complementar a analise automaticamente.'
     });
     appendRefreshControl(container);
-    showToast('Cole a chave da API OpenAI no topo do chat para habilitar os insights autom�ticos.');
+    showToast('Abra o painel de configuracoes (icone de engrenagem) e cole a chave da API OpenAI para habilitar os insights automaticos.');
     if (dom.apiKeyInput) {
       dom.apiKeyInput.focus();
     }
@@ -1018,6 +1018,10 @@ function buildSupplierPrompt(supplier) {
   ].join('\n');
 }
 
+function applyInlineFormatting(text) {
+  return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
 function formatFeedback(text) {
   const lines = String(text || '').split(/\r?\n/);
   const html = [];
@@ -1036,23 +1040,22 @@ function formatFeedback(text) {
       flushList();
       return;
     }
-    if (/^(?:[-*•])\s+/.test(line)) {
-      const item = escapeHtml(line.replace(/^(?:[-*•])\s*/, '').trim());
+    if (/^(?:[-*\u2022\u0007])\s+/.test(line)) {
+      const item = applyInlineFormatting(line.replace(/^(?:[-*\u2022\u0007])\s*/, '').trim());
       listBuffer.push('<li>' + item + '</li>');
       return;
     }
     flushList();
     if (/^[A-Za-z0-9].*:\s*$/.test(line)) {
-      const heading = escapeHtml(line.replace(/:$/, '').trim());
+      const heading = applyInlineFormatting(line.replace(/:$/, '').trim());
       html.push('<h4>' + heading + '</h4>');
       return;
     }
-    html.push('<p>' + escapeHtml(line) + '</p>');
+    html.push('<p>' + applyInlineFormatting(line) + '</p>');
   });
   flushList();
   return html.join('');
 }
-
 function renderFeedbackCard(container, config) {
   if (!container) {
     return;
@@ -1742,9 +1745,9 @@ function generateMonthlyNarrative(monthKey, monthEntry, supplierSummaries, cardN
       title: 'Resumo estratégico com IA',
       subtitle: 'Configure a chave da API para continuar',
       icon: '🔒',
-      bodyHtml: '<p>Informe a chave da API OpenAI no campo acima do chat para gerar a analise mensal automaticamente.</p>'
+      bodyHtml: '<p>Informe a chave da API OpenAI no painel de configuracoes (icone de engrenagem) para gerar a analise mensal automaticamente.</p>'
     });
-    showToast('Cole a chave da API OpenAI no topo do chat para gerar o resumo mensal.');
+    showToast('Abra o painel de configuracoes (icone de engrenagem) e cole a chave da API OpenAI para gerar o resumo mensal.');
     if (dom.apiKeyInput) {
       dom.apiKeyInput.focus();
     }
