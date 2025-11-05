@@ -11,7 +11,8 @@ const IQF_SEGMENTS = [
   { id: 'sem-dados', label: 'Sem medição IQF', none: true }
 ];
 
-const OPENAI_API_KEY =
+const API_KEY_STORAGE_KEY = 'analise-openai-key';
+const OPENAI_API_KEY_DEFAULT =
   (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEY) ||
   (typeof window !== 'undefined' && window.OPENAI_API_KEY) ||
   '';
@@ -37,6 +38,7 @@ const state = {
   monthlySummary: new Map(),
   availableMonths: [],
   emailSubjectTemplate: 'Feedback IQF - {{fornecedor}}',
+  openAiApiKey: '',
   inputDefaultPlaceholder: ''
 };
 
@@ -51,8 +53,108 @@ const dom = {
   settingsCloseBtn: null,
   settingsSaveBtn: null,
   settingsClearBtn: null,
-  settingsEmailSubject: null
+  settingsEmailSubject: null,
+  apiKeyBar: null,
+  apiKeyInput: null,
+  apiKeyToggle: null,
+  applyApiKeyBtn: null,
+  clearApiKeyBtn: null,
+  apiKeyStatus: null
 };
+
+function getOpenAiApiKey() {
+  return (state.openAiApiKey || OPENAI_API_KEY_DEFAULT || '').trim();
+}
+
+function setOpenAiApiKey(value, options) {
+  const normalized = value ? String(value).trim() : '';
+  const previous = state.openAiApiKey;
+  state.openAiApiKey = normalized;
+  try {
+    if (normalized) {
+      localStorage.setItem(API_KEY_STORAGE_KEY, normalized);
+    } else {
+      localStorage.removeItem(API_KEY_STORAGE_KEY);
+    }
+  } catch (error) {
+    console.warn('[analise:setOpenAiApiKey]', error);
+  }
+  if (dom.apiKeyInput && dom.apiKeyInput.value !== normalized) {
+    dom.apiKeyInput.value = normalized;
+  }
+  updateApiKeyStatus();
+  const changed = previous !== normalized;
+  if (options?.showToast && changed) {
+    showToast(normalized ? 'Chave OpenAI salva.' : 'Chave OpenAI removida.');
+  }
+  return changed;
+}
+
+function updateApiKeyStatus() {
+  if (!dom.apiKeyStatus) {
+    return;
+  }
+  const key = getOpenAiApiKey();
+  if (key) {
+    const masked =
+      key.length > 12 ? key.slice(0, 4) + '...' + key.slice(-4) : 'chave ativa';
+    dom.apiKeyStatus.textContent = 'Chave ativa (' + masked + ')';
+    dom.apiKeyStatus.dataset.status = 'ready';
+  } else {
+    dom.apiKeyStatus.textContent = 'Nenhuma chave informada';
+    dom.apiKeyStatus.dataset.status = 'empty';
+  }
+}
+
+function toggleApiKeyVisibility() {
+  if (!dom.apiKeyInput || !dom.apiKeyToggle) {
+    return;
+  }
+  const hidden = dom.apiKeyInput.type === 'password';
+  dom.apiKeyInput.type = hidden ? 'text' : 'password';
+  dom.apiKeyToggle.classList.toggle('active', hidden);
+  dom.apiKeyToggle.setAttribute('aria-label', hidden ? 'Ocultar chave' : 'Mostrar chave');
+}
+
+function handleApplyApiKey() {
+  if (!dom.apiKeyInput) {
+    return;
+  }
+  const changed = setOpenAiApiKey(dom.apiKeyInput.value, { showToast: true });
+  if (!changed) {
+    updateApiKeyStatus();
+    showToast(getOpenAiApiKey() ? 'Chave OpenAI ativa.' : 'Nenhuma chave informada.');
+  }
+}
+
+function handleClearApiKey() {
+  const changed = setOpenAiApiKey('', { showToast: true });
+  if (!changed) {
+    updateApiKeyStatus();
+  }
+  if (dom.apiKeyInput) {
+    dom.apiKeyInput.focus();
+  }
+}
+
+function handleApiKeyBlur() {
+  if (!dom.apiKeyInput) {
+    return;
+  }
+  setOpenAiApiKey(dom.apiKeyInput.value, { showToast: false });
+}
+
+function handleApiKeyKeydown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    handleApplyApiKey();
+  } else if (event.key === 'Escape') {
+    event.preventDefault();
+    if (dom.apiKeyInput) {
+      dom.apiKeyInput.value = state.openAiApiKey;
+    }
+  }
+}
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -102,6 +204,13 @@ function cacheDom() {
   dom.settingsSaveBtn = document.getElementById('saveSettingsBtn');
   dom.settingsClearBtn = document.getElementById('clearSettingsBtn');
   dom.settingsEmailSubject = document.getElementById('emailSubjectInput');
+  dom.apiKeyBar = document.getElementById('apiKeyBar');
+  dom.apiKeyInput = document.getElementById('apiKeyInput');
+  dom.apiKeyToggle = document.getElementById('toggleApiKeyBtn');
+  dom.applyApiKeyBtn = document.getElementById('applyApiKeyBtn');
+  dom.clearApiKeyBtn = document.getElementById('clearApiKeyBtn');
+  dom.apiKeyStatus = document.getElementById('apiKeyStatus');
+  updateApiKeyStatus();
 }
 
 function bindEvents() {
@@ -135,10 +244,24 @@ function bindEvents() {
   if (dom.settingsClearBtn) {
     dom.settingsClearBtn.addEventListener('click', clearSettings);
   }
+  if (dom.apiKeyInput) {
+    dom.apiKeyInput.addEventListener('keydown', handleApiKeyKeydown);
+    dom.apiKeyInput.addEventListener('blur', handleApiKeyBlur);
+  }
+  if (dom.applyApiKeyBtn) {
+    dom.applyApiKeyBtn.addEventListener('click', handleApplyApiKey);
+  }
+  if (dom.clearApiKeyBtn) {
+    dom.clearApiKeyBtn.addEventListener('click', handleClearApiKey);
+  }
+  if (dom.apiKeyToggle) {
+    dom.apiKeyToggle.addEventListener('click', toggleApiKeyVisibility);
+  }
 
 }
 
 function loadSettings() {
+  let persistedApiKey = '';
   try {
     const persistedSubject = localStorage.getItem('analise-email-subject');
     if (persistedSubject) {
@@ -149,9 +272,20 @@ function loadSettings() {
     } else if (dom.settingsEmailSubject) {
       dom.settingsEmailSubject.value = state.emailSubjectTemplate;
     }
+    persistedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY) || '';
   } catch (error) {
     console.warn('[analise:loadSettings]', error);
   }
+  if (persistedApiKey) {
+    state.openAiApiKey = persistedApiKey;
+  } else if (OPENAI_API_KEY_DEFAULT) {
+    state.openAiApiKey = OPENAI_API_KEY_DEFAULT;
+  }
+  if (dom.apiKeyInput) {
+    dom.apiKeyInput.value = state.openAiApiKey;
+    dom.apiKeyInput.type = 'password';
+  }
+  updateApiKeyStatus();
 }
 
 async function loadData() {
@@ -737,16 +871,20 @@ function generateSupplierFeedback(supplier, container) {
   state.lastFeedbackHtml = baselineHtml;
   state.lastEmailHtml = '';
   state.feedbackSupplierId = supplier.id;
-  const apiKey = (OPENAI_API_KEY || '').trim();
+  const apiKey = getOpenAiApiKey();
   if (!apiKey) {
     renderFeedbackCard(container, {
       title: 'Analise executiva',
       subtitle: 'Resumo gerado com dados do IQF',
       icon: '??',
       bodyHtml: baselineHtml,
-      hint: 'Configure a chave da API OpenAI para complementar a analise automaticamente.'
+      hint: 'Informe a chave da API OpenAI no campo acima do chat para complementar a analise automaticamente.'
     });
     appendRefreshControl(container);
+    showToast('Cole a chave da API OpenAI no topo do chat para habilitar os insights autom�ticos.');
+    if (dom.apiKeyInput) {
+      dom.apiKeyInput.focus();
+    }
     return;
   }
 
@@ -1598,14 +1736,18 @@ function generateMonthlyNarrative(monthKey, monthEntry, supplierSummaries, cardN
   if (!cardNode) {
     return;
   }
-  const apiKey = (OPENAI_API_KEY || '').trim();
+  const apiKey = getOpenAiApiKey();
   if (!apiKey) {
     renderFeedbackCard(cardNode, {
       title: 'Resumo estratégico com IA',
       subtitle: 'Configure a chave da API para continuar',
       icon: '🔒',
-      bodyHtml: '<p>Informe a chave da API OpenAI para gerar a analise mensal automaticamente.</p>'
+      bodyHtml: '<p>Informe a chave da API OpenAI no campo acima do chat para gerar a analise mensal automaticamente.</p>'
     });
+    showToast('Cole a chave da API OpenAI no topo do chat para gerar o resumo mensal.');
+    if (dom.apiKeyInput) {
+      dom.apiKeyInput.focus();
+    }
     return;
   }
   const prompt = buildMonthlyPrompt(monthKey, monthEntry, supplierSummaries);
