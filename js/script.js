@@ -1597,3 +1597,4 @@ window.sendAIMessage = sendAIMessage;
 window.handleAIKeyPress = handleAIKeyPress;
 window.exportIQFData = exportIQFData;
 window.exportOccurrences = exportOccurrences;
+
