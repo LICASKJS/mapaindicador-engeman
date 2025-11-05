@@ -45,29 +45,6 @@
                 </svg>
             </button>
         </div>
-        <div class="api-key-bar" id="apiKeyBar">
-            <label class="api-key-label" for="apiKeyInput">Chave OpenAI</label>
-            <div class="api-key-input-group">
-                <input
-                    type="password"
-                    id="apiKeyInput"
-                    class="api-key-input"
-                    placeholder="Cole aqui sua chave do GPT"
-                    autocomplete="off"
-                    spellcheck="false">
-                <button type="button" class="api-key-toggle" id="toggleApiKeyBtn" aria-label="Mostrar chave">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
-                </button>
-            </div>
-            <div class="api-key-actions">
-                <button type="button" class="api-key-btn" id="applyApiKeyBtn">Aplicar chave</button>
-                <button type="button" class="api-key-btn subtle" id="clearApiKeyBtn">Limpar</button>
-            </div>
-            <span class="api-key-status" id="apiKeyStatus" aria-live="polite">Nenhuma chave informada</span>
-        </div>
         <div class="messages-container" id="messagesContainer">
             <div class="message bot-message">
                 <div class="message-content">
@@ -167,6 +144,33 @@
             <div class="settings-header">
                 <h2 id="settingsTitle">Configura&ccedil;&otilde;es avan&ccedil;adas</h2>
                 <button class="close-settings" id="closeSettingsBtn" aria-label="Fechar configura&ccedil;&otilde;es">&times;</button>
+            </div>
+            <div class="settings-section">
+                <h3>Integra&ccedil;&atilde;o com OpenAI</h3>
+                <p class="settings-description">Informe sua chave privada para habilitar as an&aacute;lises com IA. O dado fica salvo apenas no seu navegador.</p>
+                <div class="api-key-bar" id="apiKeyBar">
+                    <label class="api-key-label" for="apiKeyInput">Chave OpenAI</label>
+                    <div class="api-key-input-group">
+                        <input
+                            type="password"
+                            id="apiKeyInput"
+                            class="api-key-input"
+                            placeholder="Cole aqui sua chave do GPT"
+                            autocomplete="off"
+                            spellcheck="false">
+                        <button type="button" class="api-key-toggle" id="toggleApiKeyBtn" aria-label="Mostrar chave">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="api-key-actions">
+                        <button type="button" class="api-key-btn" id="applyApiKeyBtn">Aplicar chave</button>
+                        <button type="button" class="api-key-btn subtle" id="clearApiKeyBtn">Limpar</button>
+                    </div>
+                    <span class="api-key-status" id="apiKeyStatus" aria-live="polite">Nenhuma chave informada</span>
+                </div>
             </div>
             <div class="settings-section">
                 <h3>Prefer&ecirc;ncias de e-mail</h3>
