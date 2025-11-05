@@ -1709,7 +1709,7 @@ function buildMonthlyPrompt(monthKey, monthEntry, supplierSummaries) {
     'Na seção "Ações Imediatas" utilize exatamente o texto: "Envio de notificação via e-mail aos fornecedores reprovados no IQF mensal e, em caso de reincidência, abertura de RAC para analise, tratativas e possível suspensão do fornecedor."',
     'Se alguma seção nao tiver informações relevantes, escreva "Nenhum registro" de forma direta.',
     'Em "Fornecedores Reprovados" detalhe impactos e solicitação de plano de ação.',
-    'Na seção "Alertas Prioritários" produza até três bullets iniciando com "- " destacando riscos críticos ou oportunidades urgentes.',
+    'Na seção "Alertas Prioritários" produza até três bullets iniciando com negrito destacando riscos críticos ou oportunidades urgentes.',
     'Use tom executivo, direto e orientado à decisão, evitando repetir dados literalmente sem interpretação. Deixando tudo organizado e bem feito.'
   ].join('\n');
 }
