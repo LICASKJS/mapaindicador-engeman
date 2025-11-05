@@ -11,7 +11,10 @@ const IQF_SEGMENTS = [
   { id: 'sem-dados', label: 'Sem medição IQF', none: true }
 ];
 
-const OPENAI_API_KEY = '';
+const OPENAI_API_KEY =
+  (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEY) ||
+  (typeof window !== 'undefined' && window.OPENAI_API_KEY) ||
+  '';
 const EMAIL_API_ENDPOINT = window.EMAIL_API_ENDPOINT || '';
 const EMAIL_API_TOKEN = window.EMAIL_API_TOKEN || '';
 
