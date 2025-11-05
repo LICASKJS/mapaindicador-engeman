@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ocorrências - Mapa Indicador de Suprimentos 2025</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="shortcut icon" href="img/ico.png" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="dark-mode">
+    <div class="background-elements">
+        <div class="bg-element bg-element-1"></div>
+        <div class="bg-element bg-element-2"></div>
+        <div class="bg-element bg-element-3"></div>
+    </div>
+
+    
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-container">
+                <img src="img/logo-branca.png" alt="Logo Engeman" class="logo">
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Visão Geral</a>
+                <a href="iqf.html" class="nav-link">IQF Fornecedores</a>
+                <a href="ocorrencias.html" class="nav-link active">Ocorrências</a>
+                <a href="analise.html" target="_blank" rel="noopener" class="btn-primary telegram-link">
+                    Gerar Análise
+                    <svg class="icon" viewBox="0 0 25 25" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 12h13M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="hero-section">
+            <div class="hero-container">
+                <div class="hero-badge">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <span>Monitoramento de Ocorrências</span>
+                </div>
+                <h1 class="hero-title">
+                    Ocorrências dos 
+                    <span class="gradient-text">Fornecedores</span>
+                </h1>
+                <p class="hero-description">
+                    Monitore e gerencie ocorrências em tempo real, identifique padrões e tome ações preventivas.
+                </p>
+            </div>
+        </section>
+
+        <section class="dashboard-section">
+            <div class="section-container">
+                <div class="section-header"
+                </div>
+                <div class="occurrences-filters">
+                    <div class="filter-group">
+                        <label>Período:</label>
+                        <select id="periodFilter" class="filter-select">
+                            <option value="7">Últimos 7 dias</option>
+                            <option value="30">Últimos 30 dias</option>
+                            <option value="90">Últimos 90 dias</option>
+                            <option value="365">Último ano</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Severidade:</label>
+                        <select id="severityFilter" class="filter-select">
+                            <option value="">Todas</option>
+                            <option value="critical">Crítica</option>
+                            <option value="high">Alta</option>
+                            <option value="medium">Média</option>
+                            <option value="low">Baixa</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select id="occurrenceStatusFilter" class="filter-select">
+                            <option value="">Todos</option>
+                            <option value="open">Aberta</option>
+                            <option value="in-progress">Em Andamento</option>
+                            <option value="resolved">Resolvida</option>
+                            <option value="closed">Fechada</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="occurrences-grid recurrence-grid">
+                    <div class="chart-card recurrence-card">
+                        <div class="chart-header recurrence-header">
+                            <div>
+                                <h3>Reincid&ecirc;ncia dos Fornecedores</h3>
+                            </div>
+                            <div class="recurrence-filter">
+                                <label for="recurrenceSupplierFilter">Filtrar fornecedor</label>
+                                <select id="recurrenceSupplierFilter" disabled>
+                                    <option value="">Nenhuma reincid&ecirc;ncia detectada</option>
+                                </select>
+                            </div>
+                        </div>
+
+                       
+
+                        <div class="chart-wrapper">
+                            <canvas id="recurrenceChart"></canvas>
+                            <div class="chart-empty-state" id="recurrenceEmptyState">
+                                <p>Nenhuma reincid&ecirc;ncia detectada para os filtros aplicados.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+               
+                <div class="occurrences-table-card">
+                    <div class="table-header">
+                        <h3>Tabela de Ocorrências</h3>
+                        <div class="table-filters">
+                            <input type="text" id="occurrenceSearch" placeholder="Buscar ocorrência..." class="search-input">
+                            <button class="btn-secondary" onclick="exportOccurrences()">
+                                Exportar Relatório
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="date-filter-bar">
+                        <div class="date-filter-group">
+                            <label for="dateFilterDay">Dia</label>
+                            <input type="date" id="dateFilterDay">
+                        </div>
+
+                        <div class="date-filter-group">
+                            <label for="dateFilterMonth">Mês</label>
+                            <input type="month" id="dateFilterMonth">
+                        </div>
+
+                        <div class="date-filter-group">
+                            <label for="dateFilterYear">Ano</label>
+                            <input type="number" id="dateFilterYear" min="2000" max="2100" placeholder="2025">
+                        </div>
+
+                        <button type="button" class="btn-secondary" id="dateFilterClear">Limpar</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="occurrencesTable">
+                            <thead>
+                                <tr>
+                                    <th>Fornecedor</th>
+                                    <th>Ocorrência</th>
+                                    <th>Documento</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+            </div>
+        </div>
+    </div>
+
+        <script src="js/script.js"></script>
+</body>
+</html>

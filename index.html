@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Indicador de Suprimentos</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="shortcut icon" href="img/ico.png" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+
+<body class="dark-mode">
+    <div class="background-elements">
+        <div class="bg-element bg-element-1"></div>
+        <div class="bg-element bg-element-2"></div>
+        <div class="bg-element bg-element-3"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-container">
+                <img src="img/logo-branca.png" alt="Logo Engeman" class="logo">
+            </div>
+            <nav class="nav-menu" role="navigation" aria-label="Menu principal">
+                <a href="index.html" class="nav-link active">Visão Geral</a>
+                <a href="iqf.html" class="nav-link">IQF Fornecedores</a>
+                <a href="ocorrencias.html" class="nav-link">Ocorrências</a>
+                <a href="analise.html" target="_blank" class="btn-primary telegram-link" aria-label="Gerar Análise no Telegram">
+                    Gerar Análise
+                    <svg class="icon" viewBox="0 0 25 25" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 12h13M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content" >
+        <section class="hero-section">
+            <div class="hero-container">
+                <div class="hero-badge">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 12l2 2 4-4"/>
+                        <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"/>
+                        <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"/>
+                        <path d="M3 12h6m6 0h6"/>
+                    </svg>
+                    <span>Sistema Integrado de Gestão</span>
+                </div>
+                <h1 class="hero-title">
+                    Mapa Indicador de <span class="gradient-text">Suprimentos 2026</span>
+                </h1>
+                <p class="hero-description">
+                    Gerencie fornecedores, monitore IQF, analise ocorrências e tome decisões estratégicas com nossa IA avançada integrada.
+                </p>
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalSuppliers">--</div>
+                        <div class="stat-label">Fornecedores Homologados</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="avgIqf">--</div>
+                        <div class="stat-label">Média IQF Geral</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="pendingOccurrences">--</div>
+                        <div class="stat-label">Média de Homologação</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section">
+            <div class="section-container">
+                <div class="section-header">
+                    <h2 class="section-title">Visão Geral do Sistema</h2>
+                    <p class="section-description">Acompanhe os principais indicadores dos fornecedores</p>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card chart-sm">
+                        <div class="chart-header">
+                            <h3>Status de Fornecedores</h3>
+                            <div class="chart-legend">
+                                
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="suppliersChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card chart-sm">
+                        <div class="chart-header">
+                            <h3>IQF &Uacute;ltimo M&ecirc;s</h3>
+                        </div>
+                        <div class="gauge-wrapper">
+                            <canvas id="iqfGaugeChart"></canvas>
+                            <div class="gauge-meta">
+                                <span id="iqfGaugeValue">--</span>
+                                <span id="iqfGaugeMonth">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card chart-wide">
+                        <div class="chart-header">
+                            <h3>Média IQF </h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="iqfTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-card">
+                    <div class="table-header">
+                        <h3>Fornecedores Cadastrados</h3>
+                        <div class="table-filters">
+                            <input type="text" id="supplierSearch" placeholder="Buscar fornecedor..." class="search-input" aria-label="Buscar fornecedor">
+                            <select id="statusFilter" class="filter-select" aria-label="Filtrar por status">
+                                <option value="">Todos os Status</option>
+                                <option value="approved">Homologados</option>
+                                <option value="rejected">Reprovados</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="date-filter-bar">
+                        <div class="date-filter-group">
+                            <label for="dateFilterDay">Dia</label>
+                            <input type="date" id="dateFilterDay">
+                        </div>
+                        <div class="date-filter-group">
+                            <label for="dateFilterMonth">Mês</label>
+                            <input type="month" id="dateFilterMonth">
+                        </div>
+                        <div class="date-filter-group">
+                            <label for="dateFilterYear">Ano</label>
+                            <input type="number" id="dateFilterYear" min="2000" max="2100" placeholder="2025">
+                        </div>
+                        <button type="button" class="btn-secondary" id="dateFilterClear">Limpar</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="suppliersTable">
+                            <thead>
+                                <tr>
+                                    <th>Fornecedor</th>
+                                    <th>Status</th>
+                                    <th>Nota IQF</th>
+                                    <th>Nota Homologação</th>
+                                    <th>Vencimento</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <div class="table-footnote" id="missingSuppliersHint"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="public/js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>

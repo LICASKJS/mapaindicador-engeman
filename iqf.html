@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IQF Fornecedores - Mapa Indicador de Suprimentos 2025</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="shortcut icon" href="img/ico.png" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body class="dark-mode">
+    <div class="background-elements">
+        <div class="bg-element bg-element-1"></div>
+        <div class="bg-element bg-element-2"></div>
+        <div class="bg-element bg-element-3"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-container">
+                <img src="img/logo-branca.png" alt="Logo Engeman" class="logo">
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Visão Geral</a>
+                <a href="iqf.html" class="nav-link active">IQF Fornecedores</a>
+                <a href="ocorrencias.html" class="nav-link">Ocorrências</a>
+                <a href="analise.html" target="_blank" rel="noopener" class="btn-primary telegram-link">
+                    Gerar Análise
+                    <svg class="icon" viewBox="0 0 25 25" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 12h13M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a> 
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="hero-section">
+            <div class="hero-container">
+                <div class="hero-badge">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    <span>Índice de Qualidade dos Fornecedores</span>
+                </div>
+                <h1 class="hero-title">
+                    IQF dos 
+                    <span class="gradient-text">Fornecedores</span>
+                </h1>
+                <p class="hero-description">
+                    Análise detalhada dos índices de qualidade, performance e tendências dos fornecedores cadastrados.
+                </p>
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalSuppliers">94,01%</div>
+                        <div class="stat-label">Média Geral</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="avgIqf">100,0%</div>
+                        <div class="stat-label">Melhor IQF</div>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="pendingOccurrences">1,00%</div>
+                        <div class="stat-label">Pior IQF</div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section">
+            <div class="section-container">
+                <div class="section-header">
+                   
+                </div>
+
+                <div class="iqf-filters">
+                    <div class="filter-group">
+                        <label>Período:</label>
+                        <select id="iqfPeriodFilter" class="filter-select">
+                            <option value="current">Mes Atual</option>
+                            <option value="last3">Últimos 3 meses</option>
+                            <option value="last6">Últimos 6 meses</option>
+                            <option value="year">Ano Atual</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Fornecedor:</label>
+                        <select id="supplierFilter" class="filter-select">
+                            <option value="">Todos os Fornecedores</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="iqf-grid">
+                    <div class="iqf-summary-card">
+                        <h3>Resumo IQF</h3>
+                        <div class="iqf-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Média Geral</span>
+                                <span class="metric-value" id="generalIqfAvg">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Melhor IQF</span>
+                                <span class="metric-value" id="bestIqf">--</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Pior IQF</span>
+                                <span class="metric-value" id="worstIqf">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-card chart-wide">
+                        <div class="chart-header">
+                            <h3>Gráfico IQF Mensal </h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="iqfMonthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="iqf-table-card">
+                    <div class="table-header">
+                        <h3>Tabela IQF Detalhada</h3>
+                        <div class="table-filters">
+                            <input type="text" id="iqfSearch" placeholder="Buscar fornecedor..." class="search-input">
+                            <button class="btn-secondary" onclick="exportIQFData()">
+                                Exportar Dados
+                            </button>
+                        </div>
+                    </div>
+                    <div class="date-filter-bar">
+                        <div class="date-filter-group">
+                            <label for="dateFilterDay">Dia</label>
+                            <input type="date" id="dateFilterDay">
+                        </div>
+                        <div class="date-filter-group">
+                            <label for="dateFilterMonth">Mês</label>
+                            <input type="month" id="dateFilterMonth">
+                        </div>
+                        <div class="date-filter-group">
+                            <label for="dateFilterYear">Ano</label>
+                            <input type="number" id="dateFilterYear" min="2000" max="2100" placeholder="2025">
+                        </div>
+                        <button type="button" class="btn-secondary" id="dateFilterClear">Limpar</button>
+                    </div>
+                    <div class="table-container">
+                        <table id="iqfTable">
+                            <thead>
+                                <tr>
+                                    <th>Fornecedor</th>
+                                    <th>Nota IQF</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+            </div>
+        </div>
+    </div>
+
+        <script src="js/script.js"></script>
+</body>
+</html>
