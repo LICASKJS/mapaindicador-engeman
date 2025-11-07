@@ -7,6 +7,14 @@ const SCORE_THRESHOLD = 70;
 const MAX_CHAT_HISTORY = 6;
 const dateFilter = { day: null, month: null, year: null };
 
+function cacheSafePath(path) {
+  if (!path) {
+    return path;
+  }
+  const separator = path.includes('?') ? '&' : '?';
+  return path + separator + 'cb=' + Date.now();
+}
+
 const RECURRENCE_IGNORE_SUBJECTS = new Set([
   'bom fornecedor',
   'bom atendimento',
@@ -79,7 +87,7 @@ async function loadData() {
 }
 
 async function loadWorkbook(path) {
-  const response = await fetch(path);
+  const response = await fetch(cacheSafePath(path), { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Falha ao carregar ' + path + ': ' + response.status + ' ' + response.statusText);
   }
