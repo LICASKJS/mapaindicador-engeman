@@ -62,6 +62,14 @@ const dom = {
   apiKeyStatus: null
 };
 
+function cacheSafePath(path) {
+  if (!path) {
+    return path;
+  }
+  const separator = path.includes('?') ? '&' : '?';
+  return path + separator + 'cb=' + Date.now();
+}
+
 function getOpenAiApiKey() {
   return (state.openAiApiKey || OPENAI_API_KEY_DEFAULT || '').trim();
 }
@@ -304,7 +312,7 @@ async function loadData() {
 }
 
 async function loadWorkbook(path) {
-  const response = await fetch(path);
+  const response = await fetch(cacheSafePath(path), { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Falha ao carregar ' + path + ' (' + response.status + ')');
   }
@@ -1843,7 +1851,7 @@ function buildMonthlyPrompt(monthKey, monthEntry, supplierSummaries) {
   }
 
   return [
-    'Analise mensal de ' + monthLabel + ' considerando ' + totalEvaluations + ' avaliações válidas.',
+    'Analise mensal de ' + monthLabel + ' considerando ' + totalEvaluations + ' avaliações -válidas.',
     'IQF médio global: ' + (globalAverage !== null ? formatScoreValue(globalAverage) : 'N/D') + '.',
     'Distribuição por status: aprovados ' + aprovados.length + ', atenção ' + emAtencao.length + ', reprovados ' + reprovados.length + '.',
     'Destaques de excelência (>=85):\n' + excelenciaLines,
@@ -2201,3 +2209,4 @@ function escapeHtml(value) {
     }[match])
   );
 }
+
