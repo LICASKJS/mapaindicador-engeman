@@ -66,8 +66,24 @@ function cacheSafePath(path) {
   if (!path) {
     return path;
   }
-  const separator = path.includes('?') ? '&' : '?';
-  return path + separator + 'cb=' + Date.now();
+  const cacheBust = Date.now().toString(36);
+  const base =
+    typeof window !== 'undefined' && window.location
+      ? window.location.origin && window.location.origin !== 'null'
+        ? window.location.origin
+        : window.location.href
+      : '';
+  try {
+    const resolved = new URL(path, base || undefined);
+    resolved.searchParams.set('cb', cacheBust);
+    return resolved.toString();
+  } catch (error) {
+    const [cleanPath, ...rest] = String(path).split('?');
+    const encodedPath = encodeURI(cleanPath);
+    const query = rest.length ? '?' + rest.join('?') : '';
+    const separator = query ? '&' : '?';
+    return encodedPath + query + separator + 'cb=' + cacheBust;
+  }
 }
 
 function getOpenAiApiKey() {
@@ -2209,4 +2225,3 @@ function escapeHtml(value) {
     }[match])
   );
 }
-
