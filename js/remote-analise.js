@@ -16,8 +16,14 @@ const OPENAI_API_KEY_DEFAULT =
   (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEY) ||
   (typeof window !== 'undefined' && window.OPENAI_API_KEY) ||
   '';
-const EMAIL_API_ENDPOINT = window.EMAIL_API_ENDPOINT || '';
-const EMAIL_API_TOKEN = window.EMAIL_API_TOKEN || '';
+const EMAIL_API_ENDPOINT =
+  (typeof window !== 'undefined' && window.EMAIL_API_ENDPOINT) ||
+  (typeof process !== 'undefined' && process.env && process.env.EMAIL_API_ENDPOINT) ||
+  '/api/send-email';
+const EMAIL_API_TOKEN =
+  (typeof window !== 'undefined' && window.EMAIL_API_TOKEN) ||
+  (typeof process !== 'undefined' && process.env && process.env.EMAIL_API_TOKEN) ||
+  '';
 
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
@@ -66,8 +72,24 @@ function cacheSafePath(path) {
   if (!path) {
     return path;
   }
-  const separator = path.includes('?') ? '&' : '?';
-  return path + separator + 'cb=' + Date.now();
+  const cacheBust = Date.now().toString(36);
+  const base =
+    typeof window !== 'undefined' && window.location
+      ? window.location.origin && window.location.origin !== 'null'
+        ? window.location.origin
+        : window.location.href
+      : '';
+  try {
+    const resolved = new URL(path, base || undefined);
+    resolved.searchParams.set('cb', cacheBust);
+    return resolved.toString();
+  } catch (error) {
+    const [cleanPath, ...rest] = String(path).split('?');
+    const encodedPath = encodeURI(cleanPath);
+    const query = rest.length ? '?' + rest.join('?') : '';
+    const separator = query ? '&' : '?';
+    return encodedPath + query + separator + 'cb=' + cacheBust;
+  }
 }
 
 function getOpenAiApiKey() {
@@ -1479,7 +1501,7 @@ function sendSupplierEmail(email) {
   }
   if (!EMAIL_API_ENDPOINT) {
     appendBotMessage(
-      'O envio automatico de e-mail nao esta configurado. Defina window.EMAIL_API_ENDPOINT antes de utilizar esta funcionalidade.',
+      'O envio automatico de e-mail nao esta configurado. Verifique se o servidor de envio esta em execucao.',
       true
     );
     return;
@@ -1587,7 +1609,7 @@ function handleIndicadoresMensais() {
 function renderMonthlyAnalysis(monthKey) {
   const monthEntry = state.monthlySummary && typeof state.monthlySummary.get === 'function' ? state.monthlySummary.get(monthKey) : null;
   if (!monthEntry) {
-    appendBotMessage('Dados nao encontrados para o periodo selecionado. Atualize os arquivos de origem e tente novamente.', true);
+    appendBotMessage('Dados não encontrados para o periodo selecionado. Atualize os arquivos de origem e tente novamente.', true);
     return;
   }
 
@@ -1707,7 +1729,7 @@ function renderMonthlyAnalysis(monthKey) {
     buildListSection(
       'Fornecedores em atenção (70 ≤ IQF ≤ 75)',
       emAtencao.slice(0, 10),
-      'Nenhum fornecedor em estado de atenção neste periodo.',
+      'Nenhum fornecedor em estado de atenção neste período.',
       'monthly-subsection-warning'
     )
   );
@@ -1733,7 +1755,7 @@ function renderMonthlyAnalysis(monthKey) {
     title: 'Resumo estratégico com IA',
     subtitle: 'Gerado a partir do IQF mensal',
     icon: '🧠',
-    bodyHtml: '<p>Gerando analise detalhada, aguarde alguns segundos...</p>',
+    bodyHtml: '<p>Gerando análise detalhada, aguarde alguns segundos...</p>',
     hint: 'Aguarde enquanto consultamos o modelo de IA.'
   });
   container.appendChild(aiCard);
@@ -1803,7 +1825,7 @@ function generateMonthlyNarrative(monthKey, monthEntry, supplierSummaries, cardN
         title: 'Resumo estratégico com IA',
         subtitle: 'Nao foi possivel atualizar agora',
         icon: '⚠️',
-        bodyHtml: '<p>Nao foi possivel gerar a analise neste momento. Tente novamente em instantes ou verifique a chave da API.</p>'
+        bodyHtml: '<p>Não foi possível gerar a análise neste momento. Tente novamente em instantes ou verifique a chave da API.</p>'
       });
     });
 }
@@ -1825,7 +1847,7 @@ function buildMonthlyPrompt(monthKey, monthEntry, supplierSummaries) {
         .slice(0, 20)
         .map((item) => '- ' + item.name + ' | média ' + formatScoreValue(item.avg) + ' | avaliações ' + item.count)
         .join('\n')
-    : '- Nenhum fornecedor reprovado no periodo.';
+    : '- Nenhum fornecedor reprovado no período.';
 
   const atencaoLines = emAtencao.length
     ? emAtencao
@@ -1882,7 +1904,7 @@ function handleContactBase() {
       '<p>Iran Victor.</p>',
       '<p><strong>4️⃣ FILIAL FAFEN ( BA E SE ):</strong></p>',
       '<p><strong>Compradores:</strong></p>',
-      '<p>Jennyfer.</p>',
+      '<p>Jennyfer, Gilberto, Iran, Pryscila.</p>',
       '<p><strong>5️⃣ FILIAL SÃO PAULO:</strong></p>',
       '<p><strong>Compradores:</strong></p>',
       '<p>Gilberto Trajano.</p>'
@@ -2209,4 +2231,3 @@ function escapeHtml(value) {
     }[match])
   );
 }
-
