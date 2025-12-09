@@ -5,7 +5,44 @@ const FILES = {
 
 const SCORE_THRESHOLD = 70;
 const MAX_CHAT_HISTORY = 6;
-const dateFilter = { day: null, month: null, year: null };
+const dateFilter = { day: null, months: new Set(), year: null };
+
+function getMonthFilterSet() {
+  if (!(dateFilter.months instanceof Set)) {
+    const initial = Array.isArray(dateFilter.months)
+      ? dateFilter.months
+      : dateFilter.months
+        ? [dateFilter.months]
+        : [];
+    dateFilter.months = new Set(initial);
+  }
+  return dateFilter.months;
+}
+
+function hasMonthFilter() {
+  return getMonthFilterSet().size > 0;
+}
+
+function getSelectedMonths(sorted = false) {
+  const values = Array.from(getMonthFilterSet());
+  return sorted ? values.sort() : values;
+}
+
+function toggleMonthSelection(monthKey) {
+  if (!monthKey) {
+    return;
+  }
+  const selection = getMonthFilterSet();
+  if (selection.has(monthKey)) {
+    selection.delete(monthKey);
+  } else {
+    selection.add(monthKey);
+  }
+}
+
+function resetMonthFilter() {
+  getMonthFilterSet().clear();
+}
 
 function cacheSafePath(path) {
   if (!path) {
@@ -248,7 +285,7 @@ function aggregateMonthly(rows) {
 }
 
 function matchesDate(iso) {
-  if (!dateFilter.day && !dateFilter.month && !dateFilter.year) {
+  if (!dateFilter.day && !hasMonthFilter() && !dateFilter.year) {
     return true;
   }
   if (!iso) {
@@ -258,9 +295,10 @@ function matchesDate(iso) {
   if (dateFilter.year && year !== dateFilter.year) {
     return false;
   }
-  if (dateFilter.month) {
-    const [filterYear, filterMonth] = dateFilter.month.split('-');
-    if (filterYear !== year || filterMonth !== month) {
+  const monthSelection = getMonthFilterSet();
+  if (monthSelection.size) {
+    const key = `${year}-${month}`;
+    if (!monthSelection.has(key)) {
       return false;
     }
   }
@@ -306,7 +344,7 @@ function lightenColor(hex, alpha = 0.8) {
 
 function bindControls() {
   const dayInput = document.getElementById('dateFilterDay');
-  const monthInput = document.getElementById('dateFilterMonth');
+  const monthContainer = document.getElementById('dateFilterMonth');
   const yearInput = document.getElementById('dateFilterYear');
   const clearBtn = document.getElementById('dateFilterClear');
   const triggerDateRender = () => {
@@ -320,12 +358,8 @@ function bindControls() {
       triggerDateRender();
     });
   }
-  if (monthInput) {
-    monthInput.value = dateFilter.month || '';
-    monthInput.addEventListener('change', (event) => {
-      dateFilter.month = event.target.value || null;
-      triggerDateRender();
-    });
+  if (monthContainer) {
+    initMonthMultiSelect(monthContainer, triggerDateRender);
   }
   if (yearInput) {
     yearInput.value = dateFilter.year || '';
@@ -342,10 +376,10 @@ function bindControls() {
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
       dateFilter.day = null;
-      dateFilter.month = null;
+      resetMonthFilter();
       dateFilter.year = null;
       if (dayInput) dayInput.value = '';
-      if (monthInput) monthInput.value = '';
+      if (monthContainer) renderMonthMultiSelect(monthContainer);
       if (yearInput) yearInput.value = '';
       triggerDateRender();
     });
@@ -421,6 +455,55 @@ function bindControls() {
   if (recurrenceFilter) {
     recurrenceFilter.addEventListener('change', handleRecurrenceFilterChange);
   }
+}
+
+function getAvailableMonthKeys() {
+  const months = new Set();
+  const sources = [state.iqf, state.occ];
+  sources.forEach((rows) => {
+    (Array.isArray(rows) ? rows : []).forEach((row) => {
+      const iso = row && row.date;
+      if (typeof iso === 'string' && iso.length >= 7) {
+        months.add(iso.slice(0, 7));
+      }
+    });
+  });
+  return Array.from(months).sort();
+}
+
+function renderMonthMultiSelect(container) {
+  if (!container) {
+    return;
+  }
+  const months = getAvailableMonthKeys();
+  if (!months.length) {
+    container.innerHTML = '<span class="month-multi-placeholder">Nenhum mês disponível</span>';
+    return;
+  }
+  const selected = getMonthFilterSet();
+  container.innerHTML = months
+    .map((key) => {
+      const isSelected = selected.has(key);
+      const isActive = isSelected ? ' active' : '';
+      return '<button type="button" role="option" aria-selected="' + (isSelected ? 'true' : 'false') + '" class="month-chip' + isActive + '" data-month="' + key + '">' + formatMonth(key) + '</button>';
+    })
+    .join('');
+}
+
+function initMonthMultiSelect(container, onChange) {
+  renderMonthMultiSelect(container);
+  container.addEventListener('click', (event) => {
+    const button = event.target.closest('button[data-month]');
+    if (!button) {
+      return;
+    }
+    const value = button.getAttribute('data-month');
+    toggleMonthSelection(value);
+    renderMonthMultiSelect(container);
+    if (typeof onChange === 'function') {
+      onChange();
+    }
+  });
 }
 
 function renderAll() {
@@ -504,7 +587,7 @@ function updateMissingHint() {
   if (!hint) {
     return;
   }
-  if (dateFilter.day || dateFilter.month || dateFilter.year) {
+  if (dateFilter.day || hasMonthFilter() || dateFilter.year) {
     hint.innerText = '';
     hint.style.display = 'none';
     return;
@@ -626,15 +709,18 @@ function renderIqfGauge() {
     canvas.width = canvasHost.clientWidth || 260;
     canvas.height = hostHeight;
   }
-  const hasDateFilter = Boolean(dateFilter.day || dateFilter.month || dateFilter.year);
+  const selectedMonths = getSelectedMonths(true);
+  const hasDateFilter = Boolean(dateFilter.day || selectedMonths.length || dateFilter.year);
   const filteredRows = getFilteredIqfRows();
   let displayLabel = '--';
   let displayValue = null;
   if (hasDateFilter) {
     if (dateFilter.day) {
       displayLabel = formatDate(dateFilter.day) || '--';
-    } else if (dateFilter.month) {
-      displayLabel = formatMonth(dateFilter.month);
+    } else if (selectedMonths.length === 1) {
+      displayLabel = formatMonth(selectedMonths[0]);
+    } else if (selectedMonths.length > 1) {
+      displayLabel = `${selectedMonths.length} meses`;
     } else if (dateFilter.year) {
       displayLabel = dateFilter.year;
     }
@@ -646,19 +732,38 @@ function renderIqfGauge() {
       const monthly = aggregateMonthly(filteredRows);
       const months = Array.from(monthly.keys()).sort();
       if (months.length) {
-        let targetKey = months[months.length - 1];
-        if (dateFilter.month && monthly.has(dateFilter.month)) {
-          targetKey = dateFilter.month;
-        } else if (dateFilter.year) {
-          const yearMatches = months.filter((key) => key.startsWith(dateFilter.year + '-'));
-          if (yearMatches.length) {
-            targetKey = yearMatches[yearMatches.length - 1];
+        const multiSelection = selectedMonths.length > 1;
+        if (multiSelection) {
+          const matched = selectedMonths.filter((key) => monthly.has(key));
+          if (matched.length) {
+            let sum = 0;
+            let count = 0;
+            matched.forEach((key) => {
+              const bucket = monthly.get(key);
+              if (bucket && bucket.count) {
+                sum += bucket.sum;
+                count += bucket.count;
+              }
+            });
+            if (count) {
+              displayValue = sum / count;
+            }
           }
-        }
-        const bucket = monthly.get(targetKey);
-        if (bucket && bucket.count) {
-          displayValue = bucket.sum / bucket.count;
-          displayLabel = formatMonth(targetKey);
+        } else {
+          let targetKey = months[months.length - 1];
+          if (selectedMonths.length === 1 && monthly.has(selectedMonths[0])) {
+            targetKey = selectedMonths[0];
+          } else if (!selectedMonths.length && dateFilter.year) {
+            const yearMatches = months.filter((key) => key.startsWith(dateFilter.year + '-'));
+            if (yearMatches.length) {
+              targetKey = yearMatches[yearMatches.length - 1];
+            }
+          }
+          const bucket = monthly.get(targetKey);
+          if (bucket && bucket.count) {
+            displayValue = bucket.sum / bucket.count;
+            displayLabel = formatMonth(targetKey);
+          }
         }
       }
     }
@@ -734,7 +839,7 @@ function renderTrendChart() {
     return;
   }
   const rows = getFilteredIqfRows();
-  const hasFilter = Boolean(dateFilter.day || dateFilter.month || dateFilter.year);
+  const hasFilter = Boolean(dateFilter.day || hasMonthFilter() || dateFilter.year);
   const sourceRows = rows.length ? rows : (hasFilter ? [] : state.iqf);
   const monthly = aggregateMonthly(sourceRows);
   const labels = Array.from(monthly.keys()).sort();
@@ -874,7 +979,7 @@ function renderIqfChart() {
     return;
   }
   const rows = Array.isArray(state.iqfFiltered) ? state.iqfFiltered : getFilteredIqfRows();
-  const hasFilter = Boolean(dateFilter.day || dateFilter.month || dateFilter.year);
+  const hasFilter = Boolean(dateFilter.day || hasMonthFilter() || dateFilter.year);
   const sourceRows = rows.length ? rows : (hasFilter ? [] : state.iqf);
   const monthly = aggregateMonthly(sourceRows);
   const labels = Array.from(monthly.keys()).sort();
