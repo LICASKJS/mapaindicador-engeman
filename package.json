@@ -1,0 +1,26 @@
+{
+  "name": "mapa-indicador-suprimentos-2026-web",
+  "version": "1.0.0",
+  "description": "Interface e API para o envio automatico das analises de fornecedores da Engeman.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LICASKJS/mapaindicador-engeman.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LICASKJS/mapaindicador-engeman/issues"
+  },
+  "homepage": "https://github.com/LICASKJS/mapaindicador-engeman#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "nodemailer": "^7.0.11"
+  }
+}
