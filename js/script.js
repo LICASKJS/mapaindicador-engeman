@@ -3,6 +3,11 @@ const FILES = {
   iqf: 'dados/atendimento controle_qualidade.xlsx'
 };
 
+const uploadedDataFiles = {
+  homolog: null,
+  iqf: null
+};
+
 const SCORE_THRESHOLD = 70;
 const MAX_CHAT_HISTORY = 6;
 const dateFilter = { day: null, months: new Set(), year: null };
@@ -108,6 +113,8 @@ const chatState = {
   typingNode: null
 };
 
+let controlsBound = false;
+
 document.addEventListener('DOMContentLoaded', init);
 
 async function init() {
@@ -116,12 +123,114 @@ async function init() {
     if (typeof XLSX === 'undefined') {
       throw new Error('Biblioteca XLSX nao carregada');
     }
+    initDataFileUploadControls();
     await loadData();
-    bindControls();
+    if (!controlsBound) {
+      bindControls();
+      controlsBound = true;
+    }
     renderAll();
   } catch (err) {
     console.error('[init]', err);
-    alert('Falha ao carregar as planilhas. Verifique os arquivos e recarregue a pagina.');
+    alert(
+      'Falha ao carregar as planilhas.\\n\\nUse o botao de clipe para anexar as duas planilhas (.xlsx):\\n- fornecedores_homologados\\n- atendimento controle_qualidade'
+    );
+  } finally {
+    showLoading(false);
+  }
+}
+
+function initDataFileUploadControls() {
+  if (!document.body) {
+    return;
+  }
+  if (document.getElementById('attachDataFilesBtn')) {
+    return;
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'upload-floating';
+  wrapper.innerHTML = `
+    <button type="button" class="btn-upload" id="attachDataFilesBtn" aria-label="Anexar planilhas" title="Anexar planilhas (.xlsx)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l8.49-8.49a3.5 3.5 0 014.95 4.95l-8.49 8.49a2 2 0 01-2.83-2.83l7.78-7.78" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    </button>
+    <input type="file" id="dataFilesInput" accept=".xlsx,.xls" multiple hidden>
+  `;
+
+  document.body.appendChild(wrapper);
+
+  const button = document.getElementById('attachDataFilesBtn');
+  const input = document.getElementById('dataFilesInput');
+  if (button && input) {
+    button.addEventListener('click', () => input.click());
+    input.addEventListener('change', handleDataFilesSelected);
+  }
+}
+
+function guessDataFileKind(filename) {
+  const name = String(filename || '').toLowerCase();
+  if (!name) {
+    return null;
+  }
+  if (name.includes('homolog')) {
+    return 'homolog';
+  }
+  if (name.includes('qualidade') || name.includes('controle') || name.includes('atendimento') || name.includes('iqf')) {
+    return 'iqf';
+  }
+  return null;
+}
+
+async function handleDataFilesSelected(event) {
+  const files = Array.from(event?.target?.files || []);
+  if (!files.length) {
+    return;
+  }
+  if (event?.target) {
+    event.target.value = '';
+  }
+
+  const picked = { homolog: null, iqf: null };
+
+  files.forEach((file) => {
+    const kind = guessDataFileKind(file.name);
+    if (kind && !picked[kind]) {
+      picked[kind] = file;
+    }
+  });
+
+  if (!picked.homolog && !picked.iqf && files.length >= 2) {
+    picked.homolog = files[0];
+    picked.iqf = files[1];
+  } else if (!picked.homolog && picked.iqf && files.length >= 2) {
+    picked.homolog = files.find((file) => file !== picked.iqf) || null;
+  } else if (!picked.iqf && picked.homolog && files.length >= 2) {
+    picked.iqf = files.find((file) => file !== picked.homolog) || null;
+  }
+
+  if (!picked.homolog || !picked.iqf) {
+    alert(
+      'Selecione as duas planilhas (.xlsx):\\n- fornecedores_homologados\\n- atendimento controle_qualidade'
+    );
+    return;
+  }
+
+  uploadedDataFiles.homolog = picked.homolog;
+  uploadedDataFiles.iqf = picked.iqf;
+
+  showLoading(true);
+  try {
+    await loadData();
+    if (!controlsBound) {
+      bindControls();
+      controlsBound = true;
+    }
+    renderAll();
+  } catch (error) {
+    console.error('[data-upload]', error);
+    alert('Falha ao carregar as planilhas anexadas. Verifique os arquivos e tente novamente.');
   } finally {
     showLoading(false);
   }
@@ -129,8 +238,8 @@ async function init() {
 
 async function loadData() {
   const [homRows, iqfRows] = await Promise.all([
-    loadWorkbook(FILES.homolog),
-    loadWorkbook(FILES.iqf)
+    loadWorkbook(uploadedDataFiles.homolog || FILES.homolog),
+    loadWorkbook(uploadedDataFiles.iqf || FILES.iqf)
   ]);
   state.homolog = homRows.map(mapHomolog).filter(Boolean);
   state.iqf = iqfRows
@@ -139,12 +248,22 @@ async function loadData() {
   buildState();
 }
 
-async function loadWorkbook(path) {
+async function loadWorkbook(source) {
+  if (source && typeof source === 'object' && typeof source.arrayBuffer === 'function') {
+    const buffer = await source.arrayBuffer();
+    return parseWorkbookRows(buffer);
+  }
+
+  const path = String(source || '');
   const response = await fetch(cacheSafePath(path), { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Falha ao carregar ' + path + ': ' + response.status + ' ' + response.statusText);
   }
   const buffer = await response.arrayBuffer();
+  return parseWorkbookRows(buffer);
+}
+
+function parseWorkbookRows(buffer) {
   const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true });
   const rows = [];
   workbook.SheetNames.forEach((sheetName) => {
