@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="img/ico.png" type="image/x-icon">
-<<<<<<< HEAD
-    <title>Central de Avalia&ccedil;&atilde;o - Mapa indicador de Suprimentos</title>
-=======
     <title>Central de Avalia&ccedil;&atilde;o - Mapa indicador de Suprimentos 2026</title>
->>>>>>> main
     <link rel="stylesheet" href="css/analise.css">
 </head>
 <body>
@@ -126,6 +122,12 @@
                 class="chat-input"
                 placeholder="Digite sua mensagem ou o e-mail do fornecedor"
                 autocomplete="off">
+            <input type="file" id="dataFilesInput" accept=".xlsx,.xls" multiple hidden>
+            <button class="attach-btn" id="attachFilesBtn" type="button" aria-label="Anexar planilhas" title="Anexar planilhas (.xlsx)">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.44 11.05l-8.49 8.49a5 5 0 01-7.07-7.07l8.49-8.49a3.5 3.5 0 014.95 4.95l-8.49 8.49a2 2 0 01-2.83-2.83l7.78-7.78" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </button>
             <button class="send-btn" id="sendBtn" aria-label="Enviar mensagem">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -198,7 +200,3 @@
     <script src="js/analise.js" defer></script>
 </body>
 </html>
-<<<<<<< HEAD
-
-=======
->>>>>>> main
