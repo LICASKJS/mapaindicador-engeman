@@ -174,6 +174,7 @@ body {
 
 .api-key-bar {
   display: flex;
+<<<<<<< HEAD
   flex-direction: column;
   align-items: stretch;
   gap: 12px;
@@ -190,6 +191,25 @@ body {
 }
 
 .api-key-input-group {
+=======
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: rgba(15, 23, 42, 0.65);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.4);
+}
+
+.api-key-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.api-key-input-group {
+  flex: 1 1 240px;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   display: flex;
   align-items: center;
   gap: 10px;
@@ -199,14 +219,21 @@ body {
   flex: 1;
   padding: 10px 12px;
   border-radius: 10px;
+<<<<<<< HEAD
   border: 1px solid #d0d7e2;
   background: #ffffff;
   color: #1e293b;
+=======
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.75);
+  color: #f8fafc;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   font-size: 0.95rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .api-key-input::placeholder {
+<<<<<<< HEAD
   color: #94a3b8;
 }
 
@@ -214,6 +241,15 @@ body {
   border-color: #ff7043;
   outline: none;
   box-shadow: 0 0 0 3px rgba(255, 112, 67, 0.18);
+=======
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.api-key-input:focus {
+  border-color: rgba(255, 87, 34, 0.6);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 87, 34, 0.18);
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
 }
 
 .api-key-toggle {
@@ -223,14 +259,21 @@ body {
   width: 38px;
   height: 38px;
   border-radius: 10px;
+<<<<<<< HEAD
   border: 1px solid #d0d7e2;
   background: #eef2f8;
   color: #1e293b;
+=======
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.75);
+  color: #e2e8f0;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
 }
 
 .api-key-toggle:hover {
+<<<<<<< HEAD
   border-color: #ff7043;
   color: #ff6b2c;
 }
@@ -238,6 +281,15 @@ body {
 .api-key-toggle.active {
   border-color: #ff7043;
   color: #fb5f23;
+=======
+  border-color: rgba(255, 87, 34, 0.6);
+  color: #ff784f;
+}
+
+.api-key-toggle.active {
+  border-color: rgba(255, 87, 34, 0.8);
+  color: #ff8f66;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
 }
 
 .api-key-toggle svg {
@@ -247,7 +299,11 @@ body {
 
 .api-key-actions {
   display: flex;
+<<<<<<< HEAD
   justify-content: flex-end;
+=======
+  align-items: center;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   gap: 10px;
 }
 
@@ -255,9 +311,15 @@ body {
   border: none;
   border-radius: 10px;
   padding: 10px 16px;
+<<<<<<< HEAD
   background: linear-gradient(135deg, #ff7b3d, #fb923c);
   color: #fff5eb;
   font-size: 0.9rem;
+=======
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.2), rgba(255, 120, 79, 0.35));
+  color: #ffede4;
+  font-size: 0.85rem;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
@@ -265,6 +327,7 @@ body {
 
 .api-key-btn:hover {
   transform: translateY(-2px);
+<<<<<<< HEAD
   box-shadow: 0 12px 24px rgba(249, 115, 22, 0.25);
 }
 
@@ -291,6 +354,51 @@ body {
 
 .api-key-status[data-status='error'] {
   color: #b91c1c;
+=======
+  box-shadow: 0 12px 24px rgba(255, 87, 34, 0.25);
+}
+
+.api-key-btn.subtle {
+  background: rgba(15, 23, 42, 0.75);
+  color: #cbd5f5;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.api-key-btn.subtle:hover {
+  background: rgba(26, 35, 52, 0.85);
+  border-color: rgba(255, 120, 79, 0.5);
+  color: #ffbfa5;
+}
+
+.api-key-status {
+  flex-basis: 100%;
+  font-size: 0.78rem;
+  color: rgba(148, 163, 184, 0.75);
+}
+
+.api-key-status[data-status='ready'] {
+  color: #34d399;
+}
+
+.api-key-status[data-status='error'] {
+  color: #f87171;
+}
+
+@media (max-width: 768px) {
+  .api-key-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .api-key-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .api-key-status {
+    text-align: left;
+  }
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
 }
 
 @keyframes slideDownHeader {
@@ -498,6 +606,31 @@ body {
     border-color: #ff5722;
     background: white;
     box-shadow: 0 0 0 3px rgba(255,87,34,0.1);
+}
+
+.attach-btn {
+    width: 44px;
+    height: 44px;
+    border: 2px solid #e0e0e0;
+    border-radius: 55%;
+    background: #f9f9f9;
+    color: #ff5722;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.attach-btn:hover {
+    border-color: #ff5722;
+    background: white;
+    transform: scale(1.06);
+    box-shadow: 0 2px 8px rgba(255,87,34,0.12);
+}
+
+.attach-btn:active {
+    transform: scale(0.95);
 }
 
 .send-btn {
@@ -1070,103 +1203,6 @@ body {
   margin-top: 10px;
   font-size: 13px;
   color: #64748b;
-}
-
-.email-capture-card {
-  margin-top: 12px;
-  padding: 16px;
-  border-radius: 16px;
-  border: 1px dashed #cbd5f5;
-  background: #ffffff;
-  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
-}
-
-.email-capture-card h4 {
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #0f172a;
-}
-
-.email-capture-card p {
-  margin-bottom: 12px;
-  font-size: 13px;
-  color: #334155;
-  line-height: 1.4;
-}
-
-.email-capture-form {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.email-capture-form input {
-  flex: 1;
-  min-width: 220px;
-  border: 1px solid #cbd5f5;
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.email-capture-form input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-  outline: none;
-}
-
-.email-capture-submit {
-  border: none;
-  background: #2563eb;
-  color: #ffffff;
-  font-weight: 600;
-  padding: 10px 18px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.email-capture-submit:hover:not(:disabled) {
-  background: #1d4fd8;
-  transform: translateY(-1px);
-}
-
-.email-capture-submit:disabled {
-  background: #94a3b8;
-  cursor: not-allowed;
-}
-
-.email-capture-status {
-  display: block;
-  margin-top: 8px;
-  font-size: 12px;
-  color: #475569;
-}
-
-.email-capture-status[data-state="sending"] {
-  color: #2563eb;
-}
-
-.email-capture-status[data-state="success"] {
-  color: #16a34a;
-}
-
-.email-capture-status[data-state="error"] {
-  color: #dc2626;
-}
-
-@media (max-width: 640px) {
-  .email-capture-form {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .email-capture-form input,
-  .email-capture-submit {
-    width: 100%;
-  }
 }
 
 .inline-link {
