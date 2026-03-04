@@ -3,6 +3,11 @@ const DATA_FILES = {
   iqf: 'dados/atendimento controle_qualidade.xlsx'
 };
 
+const uploadedDataFiles = {
+  homolog: null,
+  iqf: null
+};
+
 const IQF_SEGMENTS = [
   { id: 'excelente', label: 'Excelentes (IQF ≥ 90)', min: 90, max: Infinity },
   { id: 'bom', label: 'Bons (80 ≤ IQF < 90)', min: 80, max: 89.99 },
@@ -11,22 +16,21 @@ const IQF_SEGMENTS = [
   { id: 'sem-dados', label: 'Sem medição IQF', none: true }
 ];
 
+<<<<<<< HEAD
+const API_KEY_STORAGE_KEY = 'analise-gemini-key';
+const GEMINI_API_KEY_DEFAULT =
+  (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEY) ||
+  (typeof window !== 'undefined' && window.GEMINI_API_KEY) ||
+=======
 const API_KEY_STORAGE_KEY = 'analise-openai-key';
 const OPENAI_API_KEY_DEFAULT =
   (typeof process !== 'undefined' && process.env && process.env.OPENAI_API_KEY) ||
   (typeof window !== 'undefined' && window.OPENAI_API_KEY) ||
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   '';
-const EMAIL_API_ENDPOINT =
-  (typeof window !== 'undefined' && window.EMAIL_API_ENDPOINT) ||
-  (typeof process !== 'undefined' && process.env && process.env.EMAIL_API_ENDPOINT) ||
-  '/api/send-email';
-const EMAIL_API_TOKEN =
-  (typeof window !== 'undefined' && window.EMAIL_API_TOKEN) ||
-  (typeof process !== 'undefined' && process.env && process.env.EMAIL_API_TOKEN) ||
-  '';
+const EMAIL_API_ENDPOINT = window.EMAIL_API_ENDPOINT || '';
+const EMAIL_API_TOKEN = window.EMAIL_API_TOKEN || '';
 
-const ENGEMAN_LOGO_DATA_URI =
-  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfEAAAH2CAYAAABgN7XFAAAAAXNSR0IArs4c6QAAIABJREFUeF7snQe0JFW1/r9zqqrDjXMnM8QhB8kgIDz1iQ/Fh6gg/MWAIA99IoiBIEmCZBBQFBQVjDwDJswBTJhQJA5hAjAzTM43dXeFc/5rn+qeuTOAcOeG7ur+aq1ZPffe6lP7/Pap+uqkvRV4kAAJkAAJkAAJZJKAyqTVNJoESIAESIAESAAUcTYCEiABEiABEsgoAYp4Rh1Hs0mABEiABEiAIs42QAIkQAIkQAIZJUARz6jjaDYJkAAJkAAJUMTZBkiABEiABEggowQo4hl1HM0mARIgARIgAYo42wAJkAAJkAAJZJQARTyjjqPZJEACJEACJEARZxsgARIgARIggYwSoIhn1HE0mwRIgARIgAQo4mwDJEACJEACJJBRAhTxjDqOZpMACZAACZAARZxtgARIgARIgAQySoAinlHH0WwSIAESIAESoIizDZAACZAACZBARglQxDPqOJpNAiRAAiRAAhRxtgESIAESIAESyCgBinhGHUezSYAESIAESIAizjZAAiRAAiRAAhklQBHPqONoNgmQAAmQAAlQxNkGSIAESIAESCCjBCjiGXUczSYBEiABEiABijjbAAmQAAmQAAlklABFPKOOo9kkQAIkQAIkQBFnGyABEiABEiCBjBKgiGfUcTSbBEiABEiABCjibAMkQAIkQAIkkFECFPGMOo5mkwAJkAAJkABFnG2ABEiABEiABDJKgCKeUcfRbBIgARIgARKgiLMNkAAJkAAJkEBGCVDEM+o4mk0CJEACJEACFHG2ARIgARIgARLIKAGKeEYdR7NJgARIgARIgCLONkACJEACJEACGSVAEc+o42g2CZAACZAACVDE2QZIgARIgARIIKMEKOIZdRzNJgESIAESIAGKONsACZAACZAACWSUAEU8o46j2SRAAiRAAiRAEWcbIAESIAESIIGMEqCIZ9RxNJsESIAESIAEKOJsAyRAAiRAAiSQUQIU8Yw6jmaTAAmQAAmQAEWcbYAESIAESIAEMkqAIp5Rx9FsEiABEiABEqCIsw2QAAmQAAmQQEYJUMQz6jiaTQIkQAIkQAIUcbYBEiABEiABEsgoAYp4Rh1Hs0mABEiABEiAIs42QAIkQAIkQAIZJUARz6jjaDYJkAAJkAAJUMTZBkiABEiABEggowQo4hl1HM0mARIgARIgAYo42wAJkAAJkAAJZJQARTyjjqPZJEACJEACJEARZxsgARIgARIggYwSoIhn1HE0mwRIgARIgAQo4mwDJEACJEACJJBRAhTxjDqOZpMACZAACZAARZxtgARIgARIgAQySoAinlHH0WwSIAESIAESoIizDZAACZAACZBARglQxDPqOJpNAiRAAiRAAhRxtgESIAESIAESyCgBinhGHUezSYAESIAESIAizjZAAiRAAiRAAhklQBHPqONoNgmQAAmQAAlQxNkGSIAESIAESCCjBCjiGXUczSYBEiABEiABijjbAAmQAAmQAAlklABFPKOOo9kkQAIkQAIkQBFnGyABEiABEiCBjBKgiGfUcTSbBEiABEiABCjibAMkQAIkQAIkkFECFPGMOo5mkwAJkAAJkABFnG2ABEiABEiABDJKgCKeUcfRbBIgARIgARKgiLMNkAAJkAAJkEBGCVDEM+o4mk0CJEACJEACFHG2ARIgARIgARLIKAGKeEYdR7NJgARIgARIgCLONkACJEACJEACGSVAEc+o42g2CZAACZAACVDE2QZIgARIgARIIKMEKOIZdRzNJgESIAESIAGKONsACZAACZAACWSUAEU8o46j2SRAAiRAAiRAEWcbIAESIAESIIGMEqCIZ9RxNJsESIAESIAEKOJsAyRAAiRAAiSQUQIU8Yw6jmaTAAmQAAmQAEWcbYAESIAESIAEMkqAIp5Rx9FsEiABEiABEqCIsw2QAAmQAAmQQEYJUMQz6jiaTQIkQAIkQAIUcbYBEiABEiABEsgoAYp4Rh1Hs0mABEiABEiAIs42QAIkQAIkQAIZJUARz6jjaDYJkAAJkAAJUMTZBkiABEiABEggowQo4hl1HM0mARIgARIgAYo42wAJkAAJkAAJZJQARTyjjqPZJEACJEACJEARZxsgARIgARIggYwSoIhn1HE0mwRIgARIgAQo4mwDJEACJEACJJBRAhTxjDqOZpMACZAACZAARZxtgARIgARIgAQySoAinlHH0WwSIAESIAESoIizDZAACZAACZBARglQxDPqOJpNAiRAAiRAAhRxtgESIAESIAESyCgBinhGHUezSYAESIAESIAizjZAAiRAAiRAAhklQBHPqONoNgmQAAmQAAlQxNkGSIAESIAESCCjBCjiGXUczSYBEiABEiABijjbAAmQAAmQAAlklABFPKOOo9kkQAIkQAIkQBFnGyABEiABEiCBjBKgiGfUcTSbBEiABEiABCjibAMkQAIkQAIkkFECFPGMOo5mkwAJkAAJkABFnG2ABEiABEiABDJKgCKeUcfRbBIgARIgARKgiLMNkAAJkAAJkEBGCVDEM+o4mk0CJEACJEACFHG2ARIgARIgARLIKAGKeEYdR7NJgARIgARIgCLONkACJEACJEACGSVAEc+o42g2CZAACZAACVDE2QZIgARIgARIIKMEKOIZdRzNJgESIAESIAGKONsACZAACZAACWSUAEU8o46j2SRAAiRAAiRAEWcbIAESIAESIIGMEqCIZ9RxNJsESIAESIAEKOJsAyRAAiRAAiSQUQIU8Yw6jmaTAAmQAAmQAEWcbYAESIAESIAEMkqAIp5Rx9FsEiABEiABEqCIsw2QAAmQAAmQQEYJUMQz6jiaTQIkQAIkQAIUcbYBEiABEiABEsgoAYp4Rh1Hs0mABEiABEiAIs42QAIkQAIkQAIZJUARz6jjaDYJkAAJkAAJUMTZBkiABEiABEggowQo4hl1HM0mARIgARIgAYo42wAJkAAJkAAJZJQARTyjjqPZJEACJEACJEARZxsgARIgARIggYwSoIhn1HE0mwRIgARIgAQo4mwDJEACJEACJJBRAhTxjDqOZpMACZAACZAARZxtgARIgARIgAQySoAinlHH0WwSIAESIAESoIizDZAACZAACZBARglQxDPqOJpNAiRAAiRAAhRxtgESIAESIAESyCgBinhGHUezSYAESIAESIAizjZAAiRAAiRAAhklQBHPqONoNgmQAAmQAAlQxNkGSIAESIAESCCjBCjiGXUczSYBEiABEiABijjbAAmQAAmQAAlklABFPKOOo9kkQAIkQAIkQBFnGyABEiABEiCBjBKgiGfUcTSbBEiABEiABCjibAMkQAIkQAIkkFECFPGMOo5mkwAJkAAJkABFnG2ABEiABEiABDJKgCKeUcfRbBIgARIgARKgiLMNkAAJkAAJkEBGCVDEM+o4mk0CJEACJEACFHG2ARIgARIgARLIKAGKeEYdR7NJgARIgARIgCLONkACJEACJEACGSVAEc+o42g2CZAACZAACVDE2QZIgARIgARIIKMEKOIZdRzNJgESIAESIAGKONsACZAACZAACWSUAEU8o46j2SRAAiRAAiRAEWcbIAESIAESIIGMEqCIZ9RxNJsESIAESIAEKOJsAyRAAiRAAiSQUQIU8Yw6jmaTAAmQAAmQAEWcbYAESIAESIAEMkqAIp5Rx9FsEiABEiABEqCIsw2QAAmQAAmQQEYJUMQz6jiaTQIkQAIkQAIUcbYBEiABEiABEsgoAYp4Rh1Hs0mABEiABEiAIs42QAIkQAIkQAIZJUARz6jjaDYJkAAJkAAJUMTZBkiABEiABEggowQo4hl1HM0mARIgARIgAYo42wAJkAAJkAAJZJQARTyjjqPZJEACJEACJEARZxsgARIgARIggYwSoIhn1HE0mwRIgARIgAQo4mwDJEACJEACJJBRAhTxjDqOZpMACZAACZAARZxtgARIgARIgAQySoAinlHH0WwSIAESIAESoIizDZAACZAACZBARglQxDPqOJpNAiRAAiRAAhRxtgESIAESIAESyCgBinhGHUezSYAESIAESIAizjZAAiRAAiRAAhklQBHPqONoNgmQAAmQAAlQxNkGSIAESIAESCCjBCjiGXUczSYBEiABEiABijjbAAmQAAmQAAlklABFPKOOo9kkQAIkQAIkQBFnGyABEiABEiCBjBKgiGfUcTSbBEiABEiABCjibAMkQAIkQAIkkFECFPGMOo5mkwAJkAAJkABFnG2ABEiABEiABDJKgCKeUcfRbBIgARIgARKgyLMNkAAJkAAJkEBGCVDEM+o4mk0CJEACJEACFHG2ARIgARIgARLIKAGKeEYdR7NJgARIgARIgCLONkACJEACJEACGSVAEc+o42g2CZAACZAACVDE2QZIgARIgARIIKMEKOIZdRzNJgESIAESIAGKONsACZAACZAACWSUAEU8o46j2SRAAiRAAiRAEWcbIAESIAESIIGMEqCIZ9RxNJsESIAESIAEKOJsAyRAAiRAAiSQUQIU8Yw6jmaTAAmQAAmQAEWcbYAESIAESIAEMkqAIp5Rx9FsEiABEiABEqCIsw2QAAmQAAmQQEYJUMQz6jiaTQIkQAIkQAIUcbYBEiABEiABEsgoAYp4Rh1Hs0mABEiABEiAIs42QAIkQAIkQAIZJUARz6jjaDYJkAAJkAAJUMTZBkiABEiABEggowQo4hl1HM0mARIgARIgAYo42wAJkAAJkAAJZJQARTyjjqPZJEACJEACJEARZxsgARIgARIggYwSoIhn1HE0mwRIgARIgAQo4mwDJEACJEACJJBRAhTxjDqO
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 const MAX_SUPPLIER_SUGGESTIONS = 8;
@@ -46,15 +50,12 @@ const state = {
   monthlySummary: new Map(),
   availableMonths: [],
   emailSubjectTemplate: 'Feedback IQF - {{fornecedor}}',
+<<<<<<< HEAD
+  geminiApiKey: '',
+=======
   openAiApiKey: '',
-  inputDefaultPlaceholder: '',
-  emailPromptSupplierId: null,
-  selectedMonthKey: null,
-  monthlySnapshot: null,
-  monthlyEmailPromptMonthKey: null,
-  monthlySubjectTemplate: 'Relatorio IQF Mensal - {{mes}}',
-  lastMonthlyNarrativeHtml: '',
-  lastMonthlyEmailHtml: ''
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
+  inputDefaultPlaceholder: ''
 };
 
 const dom = {
@@ -62,6 +63,8 @@ const dom = {
   mainMenu: null,
   userInput: null,
   sendBtn: null,
+  attachFilesBtn: null,
+  dataFilesInput: null,
   toast: null,
   settingsBtn: null,
   settingsOverlay: null,
@@ -74,19 +77,10 @@ const dom = {
   apiKeyToggle: null,
   applyApiKeyBtn: null,
   clearApiKeyBtn: null,
-  apiKeyStatus: null,
-  emailPromptCard: null,
-  emailPromptForm: null,
-  emailPromptInput: null,
-  emailPromptButton: null,
-  emailPromptStatus: null,
-  monthlyEmailPromptCard: null,
-  monthlyEmailPromptForm: null,
-  monthlyEmailPromptInput: null,
-  monthlyEmailPromptButton: null,
-  monthlyEmailPromptStatus: null
+  apiKeyStatus: null
 };
 
+<<<<<<< HEAD
 function cacheSafePath(path) {
   if (!path) {
     return path;
@@ -111,6 +105,15 @@ function cacheSafePath(path) {
   }
 }
 
+function getGeminiApiKey() {
+  return (state.geminiApiKey || GEMINI_API_KEY_DEFAULT || '').trim();
+}
+
+function setGeminiApiKey(value, options) {
+  const normalized = value ? String(value).trim() : '';
+  const previous = state.geminiApiKey;
+  state.geminiApiKey = normalized;
+=======
 function getOpenAiApiKey() {
   return (state.openAiApiKey || OPENAI_API_KEY_DEFAULT || '').trim();
 }
@@ -119,6 +122,7 @@ function setOpenAiApiKey(value, options) {
   const normalized = value ? String(value).trim() : '';
   const previous = state.openAiApiKey;
   state.openAiApiKey = normalized;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   try {
     if (normalized) {
       localStorage.setItem(API_KEY_STORAGE_KEY, normalized);
@@ -126,7 +130,11 @@ function setOpenAiApiKey(value, options) {
       localStorage.removeItem(API_KEY_STORAGE_KEY);
     }
   } catch (error) {
+<<<<<<< HEAD
+    console.warn('[analise:setGeminiApiKey]', error);
+=======
     console.warn('[analise:setOpenAiApiKey]', error);
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   }
   if (dom.apiKeyInput && dom.apiKeyInput.value !== normalized) {
     dom.apiKeyInput.value = normalized;
@@ -134,7 +142,11 @@ function setOpenAiApiKey(value, options) {
   updateApiKeyStatus();
   const changed = previous !== normalized;
   if (options?.showToast && changed) {
+<<<<<<< HEAD
+    showToast(normalized ? 'Chave Google Gemini salva.' : 'Chave Google Gemini removida.');
+=======
     showToast(normalized ? 'Chave OpenAI salva.' : 'Chave OpenAI removida.');
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   }
   return changed;
 }
@@ -143,7 +155,11 @@ function updateApiKeyStatus() {
   if (!dom.apiKeyStatus) {
     return;
   }
+<<<<<<< HEAD
+  const key = getGeminiApiKey();
+=======
   const key = getOpenAiApiKey();
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   if (key) {
     const masked =
       key.length > 12 ? key.slice(0, 4) + '...' + key.slice(-4) : 'chave ativa';
@@ -155,6 +171,209 @@ function updateApiKeyStatus() {
   }
 }
 
+<<<<<<< HEAD
+// Função genérica para chamar a API do Google Gemini ou Hugging Face como fallback
+async function callGeminiAPI(systemPrompt, userPrompt, options = {}) {
+  const apiKey = options.apiKey || getGeminiApiKey();
+  
+  // Formata as mensagens para o formato do Gemini
+  const fullPrompt = systemPrompt 
+    ? `${systemPrompt}\n\n${userPrompt}`
+    : userPrompt;
+
+  // Se não tiver chave, usa Hugging Face (gratuito, sem chave necessária)
+  if (!apiKey) {
+    return await callHuggingFaceAPI(fullPrompt, options);
+  }
+
+  // Lista de modelos para tentar (em ordem de preferência)
+  const models = [
+    'gemini-2.0-flash-exp',
+    'gemini-2.0-flash-001',
+    'gemini-1.5-pro-latest',
+    'gemini-1.5-pro',
+    'gemini-pro'
+  ];
+
+  let lastError = null;
+  
+  for (const model of models) {
+    try {
+      // Tenta primeiro com v1beta, depois com v1 se falhar
+      let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: fullPrompt
+            }]
+          }],
+          generationConfig: {
+            temperature: options.temperature || 0.2,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: options.maxTokens || 8192,
+          }
+        })
+      });
+
+      if (!response.ok) {
+        // Se falhar com v1beta, tenta com v1
+        if (response.status === 404) {
+          try {
+            response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                contents: [{
+                  parts: [{
+                    text: fullPrompt
+                  }]
+                }],
+                generationConfig: {
+                  temperature: options.temperature || 0.2,
+                  topK: 40,
+                  topP: 0.95,
+                  maxOutputTokens: options.maxTokens || 8192,
+                }
+              })
+            });
+          } catch (v1Error) {
+            const errorText = await response.text().catch(() => '');
+            lastError = new Error(errorText || `Falha ao consultar a API do Google Gemini com modelo ${model}`);
+            continue;
+          }
+        }
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          lastError = new Error(errorText || `Falha ao consultar a API do Google Gemini com modelo ${model}`);
+          continue; // Tenta próximo modelo
+        }
+      }
+
+      const payload = await response.json();
+      
+      // Extrai o texto da resposta do Gemini
+      const text = payload?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!text) {
+        lastError = new Error('Resposta vazia da API');
+        continue;
+      }
+
+      return text.trim();
+    } catch (error) {
+      lastError = error;
+      continue; // Tenta próximo modelo
+    }
+  }
+
+  // Se todos os modelos do Gemini falharam, usa Hugging Face como fallback
+  console.warn('[analise:gemini] Todos os modelos do Gemini falharam, usando Hugging Face como fallback');
+  return await callHuggingFaceAPI(fullPrompt, options);
+}
+
+// Função alternativa usando Hugging Face Inference API (gratuita, sem chave necessária)
+async function callHuggingFaceAPI(prompt, options = {}) {
+  // Usa o modelo Meta Llama 3.1 8B que é gratuito e funciona bem em português
+  const model = 'meta-llama/Meta-Llama-3.1-8B-Instruct';
+  
+  try {
+    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          temperature: options.temperature || 0.2,
+          max_new_tokens: options.maxTokens || 2048,
+          return_full_text: false
+        }
+      })
+    });
+
+    if (!response.ok) {
+      // Se o modelo estiver carregando, espera um pouco e tenta novamente
+      if (response.status === 503) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return await callHuggingFaceAPI(prompt, options);
+      }
+      throw new Error(`Hugging Face API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    // Hugging Face retorna um array
+    if (Array.isArray(data) && data[0] && data[0].generated_text) {
+      return data[0].generated_text.trim();
+    } else if (data.generated_text) {
+      return data.generated_text.trim();
+    } else if (typeof data === 'string') {
+      return data.trim();
+    }
+    
+    throw new Error('Formato de resposta inesperado da Hugging Face');
+  } catch (error) {
+    console.error('[analise:huggingface]', error);
+    // Se Hugging Face falhar, tenta outro modelo
+    return await callHuggingFaceAPIFallback(prompt, options);
+  }
+}
+
+// Fallback adicional com outro modelo do Hugging Face
+async function callHuggingFaceAPIFallback(prompt, options = {}) {
+  const model = 'mistralai/Mistral-7B-Instruct-v0.2';
+  
+  try {
+    const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: prompt,
+        parameters: {
+          temperature: options.temperature || 0.2,
+          max_new_tokens: options.maxTokens || 2048,
+          return_full_text: false
+        }
+      })
+    });
+
+    if (!response.ok) {
+      if (response.status === 503) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        return await callHuggingFaceAPIFallback(prompt, options);
+      }
+      throw new Error(`Hugging Face API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    
+    if (Array.isArray(data) && data[0] && data[0].generated_text) {
+      return data[0].generated_text.trim();
+    } else if (data.generated_text) {
+      return data.generated_text.trim();
+    } else if (typeof data === 'string') {
+      return data.trim();
+    }
+    
+    throw new Error('Formato de resposta inesperado');
+  } catch (error) {
+    console.error('[analise:huggingface-fallback]', error);
+    throw new Error('Não foi possível gerar análise. Tente novamente em alguns instantes.');
+  }
+}
+
+=======
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
 function toggleApiKeyVisibility() {
   if (!dom.apiKeyInput || !dom.apiKeyToggle) {
     return;
@@ -169,15 +388,26 @@ function handleApplyApiKey() {
   if (!dom.apiKeyInput) {
     return;
   }
+<<<<<<< HEAD
+  const changed = setGeminiApiKey(dom.apiKeyInput.value, { showToast: true });
+  if (!changed) {
+    updateApiKeyStatus();
+    showToast(getGeminiApiKey() ? 'Chave Google Gemini ativa.' : 'Nenhuma chave informada.');
+=======
   const changed = setOpenAiApiKey(dom.apiKeyInput.value, { showToast: true });
   if (!changed) {
     updateApiKeyStatus();
     showToast(getOpenAiApiKey() ? 'Chave OpenAI ativa.' : 'Nenhuma chave informada.');
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   }
 }
 
 function handleClearApiKey() {
+<<<<<<< HEAD
+  const changed = setGeminiApiKey('', { showToast: true });
+=======
   const changed = setOpenAiApiKey('', { showToast: true });
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   if (!changed) {
     updateApiKeyStatus();
   }
@@ -190,7 +420,11 @@ function handleApiKeyBlur() {
   if (!dom.apiKeyInput) {
     return;
   }
+<<<<<<< HEAD
+  setGeminiApiKey(dom.apiKeyInput.value, { showToast: false });
+=======
   setOpenAiApiKey(dom.apiKeyInput.value, { showToast: false });
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
 }
 
 function handleApiKeyKeydown(event) {
@@ -200,7 +434,11 @@ function handleApiKeyKeydown(event) {
   } else if (event.key === 'Escape') {
     event.preventDefault();
     if (dom.apiKeyInput) {
+<<<<<<< HEAD
+      dom.apiKeyInput.value = state.geminiApiKey;
+=======
       dom.apiKeyInput.value = state.openAiApiKey;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
     }
   }
 }
@@ -232,7 +470,7 @@ async function init() {
     console.error('[analise:init]', error);
     updateMessage(
       loadingMessage,
-      'Nao foi possivel carregar as planilhas. Verifique os arquivos em "dados/" e recarregue a página.',
+      'Nao foi possivel carregar as planilhas. Use o botao de clipe para anexar as duas planilhas (.xlsx) e tente novamente.',
       true
     );
   }
@@ -243,6 +481,8 @@ function cacheDom() {
   dom.mainMenu = document.getElementById('main-menu');
   dom.userInput = document.getElementById('userInput');
   dom.sendBtn = document.getElementById('sendBtn');
+  dom.attachFilesBtn = document.getElementById('attachFilesBtn');
+  dom.dataFilesInput = document.getElementById('dataFilesInput');
   if (dom.userInput && !state.inputDefaultPlaceholder) {
     state.inputDefaultPlaceholder = dom.userInput.placeholder || '';
   }
@@ -273,6 +513,10 @@ function bindEvents() {
         handleUserSend();
       }
     });
+  }
+  if (dom.attachFilesBtn && dom.dataFilesInput) {
+    dom.attachFilesBtn.addEventListener('click', () => dom.dataFilesInput.click());
+    dom.dataFilesInput.addEventListener('change', handleDataFilesSelected);
   }
   if (dom.settingsBtn) {
     dom.settingsBtn.addEventListener('click', openSettings);
@@ -306,7 +550,89 @@ function bindEvents() {
   if (dom.apiKeyToggle) {
     dom.apiKeyToggle.addEventListener('click', toggleApiKeyVisibility);
   }
+<<<<<<< HEAD
+}
+=======
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
 
+function guessDataFileKind(filename) {
+  const name = String(filename || '').toLowerCase();
+  if (!name) {
+    return null;
+  }
+  if (name.includes('homolog')) {
+    return 'homolog';
+  }
+  if (name.includes('qualidade') || name.includes('controle') || name.includes('atendimento') || name.includes('iqf')) {
+    return 'iqf';
+  }
+  return null;
+}
+
+async function handleDataFilesSelected(event) {
+  const files = Array.from(event?.target?.files || []);
+  if (!files.length) {
+    return;
+  }
+  if (event?.target) {
+    event.target.value = '';
+  }
+
+  const picked = { homolog: null, iqf: null };
+
+  files.forEach((file) => {
+    const kind = guessDataFileKind(file.name);
+    if (kind && !picked[kind]) {
+      picked[kind] = file;
+    }
+  });
+
+  if (!picked.homolog && !picked.iqf && files.length >= 2) {
+    picked.homolog = files[0];
+    picked.iqf = files[1];
+  } else if (!picked.homolog && picked.iqf && files.length >= 2) {
+    picked.homolog = files.find((file) => file !== picked.iqf) || null;
+  } else if (!picked.iqf && picked.homolog && files.length >= 2) {
+    picked.iqf = files.find((file) => file !== picked.homolog) || null;
+  }
+
+  if (!picked.homolog || !picked.iqf) {
+    showToast('Selecione as duas planilhas (.xlsx) para atualizar as bases.');
+    appendBotMessage(
+      'Para atualizar as bases, anexe as duas planilhas (.xlsx): <strong>fornecedores_homologados</strong> e <strong>atendimento controle_qualidade</strong>.',
+      true
+    );
+    return;
+  }
+
+  uploadedDataFiles.homolog = picked.homolog;
+  uploadedDataFiles.iqf = picked.iqf;
+
+  const loadingMessage = appendBotMessage('Carregando planilhas anexadas...');
+  showToast('Atualizando bases...');
+
+  try {
+    await loadData();
+    state.selectedSupplier = null;
+    state.feedbackSupplierId = null;
+    state.lastFeedback = '';
+    state.lastFeedbackHtml = '';
+    state.lastEmailHtml = '';
+    updateMessage(
+      loadingMessage,
+      'Bases atualizadas com as planilhas anexadas. Digite <strong>menu</strong> para voltar ao inicio.',
+      true
+    );
+    showToast('Bases atualizadas.');
+  } catch (error) {
+    console.error('[analise:data-upload]', error);
+    updateMessage(
+      loadingMessage,
+      'Falha ao carregar as planilhas anexadas. Verifique os arquivos e tente novamente.',
+      true
+    );
+    showToast('Falha ao atualizar bases.');
+  }
 }
 
 function loadSettings() {
@@ -326,12 +652,21 @@ function loadSettings() {
     console.warn('[analise:loadSettings]', error);
   }
   if (persistedApiKey) {
+<<<<<<< HEAD
+    state.geminiApiKey = persistedApiKey;
+  } else if (GEMINI_API_KEY_DEFAULT) {
+    state.geminiApiKey = GEMINI_API_KEY_DEFAULT;
+  }
+  if (dom.apiKeyInput) {
+    dom.apiKeyInput.value = state.geminiApiKey;
+=======
     state.openAiApiKey = persistedApiKey;
   } else if (OPENAI_API_KEY_DEFAULT) {
     state.openAiApiKey = OPENAI_API_KEY_DEFAULT;
   }
   if (dom.apiKeyInput) {
     dom.apiKeyInput.value = state.openAiApiKey;
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
     dom.apiKeyInput.type = 'password';
   }
   updateApiKeyStatus();
@@ -342,8 +677,8 @@ async function loadData() {
     throw new Error('Biblioteca XLSX nao carregada');
   }
   const [homRows, iqfRows] = await Promise.all([
-    loadWorkbook(DATA_FILES.homolog),
-    loadWorkbook(DATA_FILES.iqf)
+    loadWorkbook(uploadedDataFiles.homolog || DATA_FILES.homolog),
+    loadWorkbook(uploadedDataFiles.iqf || DATA_FILES.iqf)
   ]);
   const homolog = homRows.map(mapHomolog).filter(Boolean);
   const iqf = iqfRows
@@ -352,12 +687,22 @@ async function loadData() {
   buildSupplierState(homolog, iqf);
 }
 
-async function loadWorkbook(path) {
+async function loadWorkbook(source) {
+  if (source && typeof source === 'object' && typeof source.arrayBuffer === 'function') {
+    const buffer = await source.arrayBuffer();
+    return parseWorkbookRows(buffer);
+  }
+
+  const path = String(source || '');
   const response = await fetch(cacheSafePath(path), { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Falha ao carregar ' + path + ' (' + response.status + ')');
   }
   const buffer = await response.arrayBuffer();
+  return parseWorkbookRows(buffer);
+}
+
+function parseWorkbookRows(buffer) {
   const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true });
   const rows = [];
   workbook.SheetNames.forEach((sheetName) => {
@@ -711,7 +1056,6 @@ function showSupplierDetails(supplierId) {
   state.lastFeedback = '';
   state.lastFeedbackHtml = '';
   state.lastEmailHtml = '';
-  clearEmailPrompt();
 
   const content = createMessage('bot');
   const header = document.createElement('div');
@@ -795,12 +1139,10 @@ function showSupplierDetails(supplierId) {
 
   const hint = document.createElement('p');
   hint.className = 'message-hint';
-  hint.innerHTML =
-    'Utilize o cartao "Envio automatico do feedback" para informar o e-mail de contato e disparar a analise.';
+  hint.innerHTML = 'Digite o e-mail do fornecedor na caixa de mensagem para preparar o envio automatico do feedback.';
   content.appendChild(hint);
 
   generateSupplierFeedback(supplier, feedbackCard);
-  renderEmailPrompt(supplier);
 }
 
 function buildSupplierClassificationNarrative(supplier) {
@@ -923,6 +1265,10 @@ function generateSupplierFeedback(supplier, container) {
   state.lastFeedbackHtml = baselineHtml;
   state.lastEmailHtml = '';
   state.feedbackSupplierId = supplier.id;
+<<<<<<< HEAD
+  const apiKey = getGeminiApiKey();
+  // Não precisa mais de chave obrigatória - usa Hugging Face como fallback
+=======
   const apiKey = getOpenAiApiKey();
   if (!apiKey) {
     renderFeedbackCard(container, {
@@ -930,46 +1276,25 @@ function generateSupplierFeedback(supplier, container) {
       subtitle: 'Resumo gerado com dados do IQF',
       icon: '??',
       bodyHtml: baselineHtml,
-      hint: 'Informe a chave da API OpenAI no painel de configuracoes (icone de engrenagem) para complementar a analise automaticamente.'
+      hint: 'Informe a chave da API OpenAI no campo acima do chat para complementar a analise automaticamente.'
     });
     appendRefreshControl(container);
-    showToast('Abra o painel de configuracoes (icone de engrenagem) e cole a chave da API OpenAI para habilitar os insights automaticos.');
+    showToast('Cole a chave da API OpenAI no topo do chat para habilitar os insights autom�ticos.');
     if (dom.apiKeyInput) {
       dom.apiKeyInput.focus();
     }
     return;
   }
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
 
-  fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + apiKey
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      temperature: 0.2,
-      messages: [
-        { role: 'system', content: 'Você é um especialista em qualificação de fornecedores.' },
-        { role: 'user', content: buildSupplierPrompt(supplier) }
-      ]
-    })
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.text().then((text) => {
-          throw new Error(text || 'Falha ao consultar a API');
-        });
-      }
-      return response.json();
-    })
-    .then((payload) => {
+  callGeminiAPI(
+    'Você é um especialista em qualificação de fornecedores.',
+    buildSupplierPrompt(supplier),
+    { temperature: 0.2 }
+  )
+    .then((answer) => {
       if (state.feedbackSupplierId !== supplier.id) {
         return;
-      }
-      const answer = payload?.choices?.[0]?.message?.content?.trim();
-      if (!answer) {
-        throw new Error('Resposta vazia da API');
       }
       const combined = baselineText + '\n\n' + answer;
       const formatted = formatFeedback(combined);
@@ -979,14 +1304,14 @@ function generateSupplierFeedback(supplier, container) {
       state.feedbackSupplierId = supplier.id;
       renderFeedbackCard(container, {
         title: 'Analise executiva',
-        subtitle: 'Complementada com IA (GPT-4o mini)',
+        subtitle: 'Complementada com IA (Google Gemini)',
         icon: '🤖',
         bodyHtml: formatted
       });
       appendRefreshControl(container);
     })
     .catch((error) => {
-      console.error('[analise:gpt]', error);
+      console.error('[analise:gemini]', error);
       state.lastFeedback = baselineText;
       state.lastFeedbackHtml = baselineHtml;
       state.lastEmailHtml = '';
@@ -998,7 +1323,7 @@ function generateSupplierFeedback(supplier, container) {
         hint: 'Nao foi possivel complementar a analise com IA agora. Tente novamente em instantes.'
       });
       appendRefreshControl(container);
-      showToast('Erro ao consultar a API OpenAI. Tente novamente em instantes.');
+      showToast('Erro ao consultar a API Google Gemini. Tente novamente em instantes.');
     });
 }
 
@@ -1074,39 +1399,6 @@ function applyInlineFormatting(text) {
   return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 }
 
-const HEADING_EMOJI_MAP = {
-  'visao geral': '📊',
-  'pontos de atencao': '⚠️',
-  'pontos fortes': '•',
-  'riscos e pontos de atencao': '•',
-  'recomendacoes taticas': '•',
-  'plano de monitoramento (30 dias)': '•',
-  'observacoes complementares': '•',
-  'fornecedores reprovados': '•',
-  'acoes imediatas': '🚨',
-  'conclusao': '•',
-  'alertas prioritarios': '❗'
-};
-
-function decorateHeadingLabel(label) {
-  if (!label) {
-    return label;
-  }
-  const base = label.trim();
-  let normalized = base.toLowerCase();
-  if (typeof base.normalize === 'function') {
-    normalized = base
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-  }
-  const emoji = HEADING_EMOJI_MAP[normalized];
-  if (!emoji || base.startsWith(emoji)) {
-    return base;
-  }
-  return emoji + ' ' + base;
-}
-
 function formatFeedback(text) {
   const lines = String(text || '').split(/\r?\n/);
   const html = [];
@@ -1132,8 +1424,7 @@ function formatFeedback(text) {
     }
     flushList();
     if (/^[A-Za-z0-9].*:\s*$/.test(line)) {
-      const rawHeading = line.replace(/:$/, '').trim();
-      const heading = applyInlineFormatting(decorateHeadingLabel(rawHeading));
+      const heading = applyInlineFormatting(line.replace(/:$/, '').trim());
       html.push('<h4>' + heading + '</h4>');
       return;
     }
@@ -1272,258 +1563,118 @@ function formatOccurrencesHtml(occurrences) {
   return '<p>🔴 <strong>Ocorrências registradas no atendimento:</strong></p><ul>' + items.join('') + '</ul>';
 }
 
-function buildEmailHtml(supplier, analysisHtml) {
-  const supplierDisplayName = supplier?.name && supplier.name.trim() ? supplier.name : null;
-  const supplierName = escapeHtml(supplierDisplayName || (supplier.code ? 'Fornecedor ' + supplier.code : 'Fornecedor nao identificado'));
-  const statusLabel = escapeHtml(supplier?.status || 'Pendente');
-  const statusClass = getStatusBadgeClass(supplier?.status);
-  const lastIqfDate = formatDate(supplier?.lastIqfDate) || 'N/D';
-  const iqfScore = Number.isFinite(supplier?.averageIqf) ? formatScoreValue(supplier.averageIqf) : 'N/D';
-  const lastEvaluation = iqfScore !== 'N/D' ? lastIqfDate + ' · IQF ' + iqfScore : lastIqfDate;
-  const feedbackSection = analysisHtml || '<p class="empty">Feedback nao disponível no momento.</p>';
-  const observationDetails = [
-    { label: 'Média IQF atual', value: iqfScore !== 'N/D' ? iqfScore : null },
-    {
-      label: 'Avaliações consideradas',
-      value: supplier?.iqfSamples ? supplier.iqfSamples + ' registros analisados' : null
-    },
-    { label: 'Status consolidado', value: supplier?.status ? supplier.status : null },
-    { label: 'Última avaliação IQF', value: lastEvaluation !== 'N/D' ? lastEvaluation : null },
-    { label: 'Validade da homologação', value: supplier?.expire ? formatDate(supplier.expire) : null }
-  ].filter((item) => item.value);
-  const observationsSection = observationDetails.length
-    ? '<ul class="observation-list">' +
-      observationDetails
-        .map((item) => '<li><strong>' + escapeHtml(item.label) + ':</strong> ' + escapeHtml(item.value) + '</li>')
-        .join('') +
-      '</ul>'
-    : '<p class="empty">Sem observações complementares no momento.</p>';
-  const occurrenceItems = (supplier?.occurrences || []).slice(0, 5).map((occ) => {
-    const dateLabel = occ.formattedDate || formatDate(occ.date) || 'Data nao informada';
-    const text = escapeHtml(occ.text || occ.occ || 'Sem descricao.');
-    const document = occ.document ? ' (Doc: ' + escapeHtml(occ.document) + ')' : '';
-    return '<li><strong>' + escapeHtml(dateLabel) + '</strong><span>' + text + document + '</span></li>';
-  });
-  const occurrencesSection = occurrenceItems.length ? '<ul class="occurrence-list">' + occurrenceItems.join('') + '</ul>' : '';
+function buildEmailHtml(supplier, narrativeHtml, analysisHtml) {
+  const supplierDisplayName = supplier.name && supplier.name.trim() ? supplier.name : null;
+  const supplierName = escapeHtml(supplierDisplayName || 'N/D');
+  const greetingName = escapeHtml(supplierDisplayName || (supplier.code ? 'Fornecedor ' + supplier.code : 'Parceiro Engeman'));
+  const supplierCode = supplier.code ? escapeHtml(supplier.code) : 'N/D';
+  const statusLabel = escapeHtml(supplier.status || 'Pendente');
+  const statusBadgeClass = getStatusBadgeClass(supplier.status);
+  const iqfScore = formatScoreValue(supplier.averageIqf);
+  const homologScore = formatScoreValue(supplier.homologScore);
+  const expire = formatDate(supplier.expire) || 'N/D';
+  const lastIqf = formatDate(supplier.lastIqfDate) || 'N/D';
+  const iqfSamples = supplier.iqfSamples || 0;
+  const occurrenceCount = supplier.occurrences.length || 0;
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Atualizacao Engeman - ${supplierName}</title>
+<title>Feedback IQF - ${supplierName}</title>
 <style>
-body{margin:0;background:#f4f5f7;font-family:"Segoe UI",Arial,sans-serif;color:#0f172a;}
-.wrapper{padding:30px 16px;}
-.content{max-width:640px;margin:0 auto;background:#ffffff;border-radius:18px;box-shadow:0 20px 40px rgba(15,23,42,0.08);overflow:hidden;}
-.header{padding:32px 30px;background:#0f172a;color:#f8fafc;text-align:center;}
-.header-logo{height:44px;margin:0 auto 14px;display:block;}
-.header h1{margin:0;font-size:22px;}
-.header p{margin:6px 0 0;font-size:13px;color:rgba(248,250,252,0.8);}
-.card{padding:26px 30px;border-top:1px solid #e2e8f0;}
+body{margin:0;background:#f3f4f6;font-family:"Segoe UI",Arial,sans-serif;color:#111827;}
+.wrapper{padding:32px 16px;}
+.content{max-width:640px;margin:0 auto;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 18px 42px rgba(15,23,42,0.12);}
+.header{background:linear-gradient(135deg,#fb923c,#ef4444);color:#ffffff;padding:32px 28px 24px;}
+.header h1{margin:0;font-size:24px;font-weight:700;}
+.header p{margin:8px 0 0;font-size:14px;color:rgba(255,255,255,0.85);}
+.card{padding:28px 28px 24px;border-top:1px solid #f1f5f9;}
 .card:first-of-type{border-top:none;}
-.card h2{margin:0 0 14px;font-size:17px;}
-.info-list{list-style:none;padding:0;margin:0;}
-.info-list li{margin-bottom:12px;}
-.info-list span{display:block;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;}
-.info-list strong{display:block;font-size:16px;margin-top:3px;color:#0f172a;}
-.status-pill{display:inline-block;margin-top:4px;padding:6px 14px;border-radius:999px;font-size:12px;font-weight:600;color:#fff;}
-.badge-homologado{background:#10b981;}
+.card h2{margin:0 0 18px;font-size:18px;color:#0f172a;}
+.card h4{margin:20px 0 10px;font-size:15px;color:#0f172a;}
+.card p{margin:0 0 14px;line-height:1.6;color:#1f2937;}
+.card ul{margin:0 0 14px;padding-left:20px;color:#1f2937;}
+.summary-table{width:100%;border-collapse:collapse;}
+.summary-table td{padding:14px;border:1px solid #e2e8f0;vertical-align:top;}
+.summary-table span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;color:#6b7280;}
+.summary-table strong{display:block;margin-top:6px;font-size:16px;color:#0f172a;}
+.summary-table small{display:block;margin-top:4px;font-size:12px;color:#64748b;}
+.status-badge{display:inline-block;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;color:#ffffff;}
+.badge-homologado{background:#059669;}
 .badge-reprovado{background:#dc2626;}
 .badge-pendente{background:#d97706;}
-.badge-em-atencao{background:#f97316;}
-.feedback-card h2{margin-bottom:8px;}
-.feedback-columns{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px;}
-.feedback-column{flex:1 1 260px;background:#f8fafc;border-radius:16px;padding:18px;}
-.feedback-column h3{margin:0 0 10px;font-size:15px;}
-.feedback-column ul{list-style:none;padding:0;margin:0;}
-.feedback-column li+li{margin-top:8px;}
-.feedback-column strong{color:#0f172a;}
-.occurrence-list{list-style:none;padding:0;margin:0;}
-.occurrence-list li{padding:10px 0;border-bottom:1px solid #f1f5f9;}
-.occurrence-list li:last-child{border-bottom:none;}
-.occurrence-list strong{display:block;font-size:13px;color:#475569;}
-.occurrence-list span{display:block;font-size:14px;color:#0f172a;margin-top:2px;}
-.empty{font-size:13px;color:#94a3b8;}
-.footer{padding:18px 30px;background:#f8fafc;font-size:12px;color:#64748b;text-align:center;}
+.footer{background:#f9fafb;padding:20px 28px;font-size:12px;color:#64748b;text-align:center;}
+.analysis-card ul{margin-bottom:12px;}
 </style>
 </head>
 <body>
-  <div class="wrapper">
-    <div class="content">
-      <div class="header">
-        <img src="${ENGEMAN_LOGO_DATA_URI}" alt="Logo Engeman" class="header-logo">
-        <h1>Atualizacao de desempenho do fornecedor</h1>
-        <p>Mensagem automatica da Central de Suprimentos Engeman</p>
-      </div>
-      <div class="card">
-        <h2>Dados principais</h2>
-        <ul class="info-list">
-          <li>
+<div class="wrapper">
+  <div class="content">
+    <div class="header">
+      <h1>Engeman | Feedback IQF</h1>
+      <p>Relatorio automatico do indice de qualidade do fornecedor</p>
+    </div>
+    <div class="card">
+      <h2>Resumo do fornecedor</h2>
+      <table class="summary-table" role="presentation" cellspacing="0" cellpadding="0">
+        <tr>
+          <td>
             <span>Fornecedor</span>
             <strong>${supplierName}</strong>
-          </li>
-          <li>
+          </td>
+          <td>
+            <span>Codigo</span>
+            <strong>${supplierCode}</strong>
+          </td>
+        </tr>
+        <tr>
+          <td>
             <span>Status consolidado</span>
-            <span class="status-pill ${statusClass}">${statusLabel}</span>
-          </li>
-          <li>
-            <span>Ultima avaliacao registrada</span>
-            <strong>${lastEvaluation}</strong>
-          </li>
-        </ul>
-      </div>
-      <div class="card feedback-card">
-        <h2>Feedback detalhado do fornecedor</h2>
-        <div class="feedback-columns">
-          <div class="feedback-column feedback-content">
-            ${feedbackSection}
-          </div>
-          <div class="feedback-column feedback-observations">
-            <h3>Observações complementares</h3>
-            ${observationsSection}
-          </div>
-        </div>
-      </div>
-      ${occurrencesSection ? `<div class="card"><h2>Ocorrências recentes</h2>${occurrencesSection}</div>` : ''}
-      <div class="footer">
-        Este e-mail foi enviado automaticamente. Em caso de duvidas, contate o time de Suprimentos.
-      </div>
+            <span class="status-badge ${statusBadgeClass}">${statusLabel}</span>
+          </td>
+          <td>
+            <span>Notas</span>
+            <strong>IQF ${iqfScore}</strong>
+            <small>Homologacao ${homologScore}</small>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span>Ultima avaliacao IQF</span>
+            <strong>${lastIqf}</strong>
+          </td>
+          <td>
+            <span>Validade da homologacao</span>
+            <strong>${expire}</strong>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span>Amostras IQF</span>
+            <strong>${iqfSamples}</strong>
+          </td>
+          <td>
+            <span>Ocorrencias registradas</span>
+            <strong>${occurrenceCount}</strong>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Mensagem oficial</h2>
+      <p>Ola ${greetingName},</p>
+      ${narrativeHtml}
+    </div>
+    <div class="card analysis-card">
+      <h2>Insights IA</h2>
+      ${analysisHtml}
+    </div>
+    <div class="footer">
+      Engeman Suprimentos - Este e-mail foi gerado automaticamente. Para duvidas, contate o time de Suprimentos.
     </div>
   </div>
-</body>
-</html>`;
-}
-
-function buildMonthlyEmailHtml(snapshot, narrativeHtml) {
-  if (!snapshot) {
-    return '';
-  }
-  const monthLabelRaw = snapshot.monthLabel || formatMonthLabel(snapshot.monthKey);
-  const monthLabel = escapeHtml(monthLabelRaw);
-  const totals = snapshot.totals || {};
-  const distribution = snapshot.distribution || {};
-  const averageLabel = Number.isFinite(totals.globalAverage) ? formatScoreValue(totals.globalAverage) : 'N/D';
-  const totalSamples = totals.totalSamples ?? 0;
-  const totalSuppliers = totals.totalSuppliers ?? 0;
-  const narrative = narrativeHtml || '<p class="empty">Resumo mensal indisponivel.</p>';
-  const generatedDateIso = snapshot.generatedAt ? String(snapshot.generatedAt).slice(0, 10) : new Date().toISOString().slice(0, 10);
-  const generatedLabel = formatDate(generatedDateIso) || generatedDateIso;
-
-  const buildItemsList = (items, emptyMessage) => {
-    if (!items || !items.length) {
-      return '<p class="empty">' + escapeHtml(emptyMessage) + '</p>';
-    }
-    const rows = items.map((item) => {
-      const name = escapeHtml(item.name || 'Fornecedor n/d');
-      const status = escapeHtml(item.status || 'Pendente');
-      const avg = Number.isFinite(item.avg) ? formatScoreValue(item.avg) : 'N/D';
-      const count = item.count ?? 0;
-      return '<li><strong>' + name + ' (' + status + ')</strong><span>IQF ' + avg + ' • ' + count + ' avaliacoes</span></li>';
-    });
-    return '<ul class="occurrence-list">' + rows.join('') + '</ul>';
-  };
-
-  return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Relatorio Mensal - ${monthLabel}</title>
-<style>
-body{margin:0;background:#f4f5f7;font-family:"Segoe UI",Arial,sans-serif;color:#0f172a;}
-.wrapper{padding:30px 16px;}
-.content{max-width:640px;margin:0 auto;background:#ffffff;border-radius:18px;box-shadow:0 20px 40px rgba(15,23,42,0.08);overflow:hidden;}
-.header{padding:32px 30px;background:#111827;color:#f8fafc;text-align:center;}
-.header-logo{height:44px;margin:0 auto 14px;display:block;}
-.header h1{margin:0;font-size:22px;}
-.header p{margin:6px 0 0;font-size:13px;color:rgba(248,250,252,0.75);}
-.card{padding:24px 30px;border-top:1px solid #e2e8f0;}
-.card:first-of-type{border-top:none;}
-.card h2{margin:0 0 14px;font-size:17px;}
-.stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
-.stat{background:#f8fafc;border-radius:14px;padding:14px;}
-.stat span{display:block;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;color:#94a3b8;}
-.stat strong{display:block;font-size:18px;margin-top:4px;}
-.distribution{display:flex;gap:16px;flex-wrap:wrap;}
-.distribution div{flex:1 1 140px;background:#f1f5f9;border-radius:12px;padding:12px;text-align:center;}
-.distribution span{display:block;font-size:12px;color:#475569;}
-.distribution strong{display:block;font-size:20px;margin-top:4px;}
-.occurrence-list{list-style:none;padding:0;margin:0;}
-.occurrence-list li{padding:10px 0;border-bottom:1px solid #f1f5f9;}
-.occurrence-list li:last-child{border-bottom:none;}
-.occurrence-list strong{display:block;font-size:13px;color:#475569;}
-.occurrence-list span{display:block;font-size:14px;color:#0f172a;margin-top:2px;}
-.empty{font-size:13px;color:#94a3b8;}
-.footer{padding:18px 30px;background:#f8fafc;font-size:12px;color:#64748b;text-align:center;}
-</style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="content">
-      <div class="header">
-        <img src="${ENGEMAN_LOGO_DATA_URI}" alt="Logo Engeman" class="header-logo">
-        <h1>Relatorio IQF Mensal</h1>
-        <p>Periodo avaliado: ${monthLabel}</p>
-      </div>
-      <div class="card">
-        <h2>Resumo executivo</h2>
-        <div class="stats-grid">
-          <div class="stat">
-            <span>Média global IQF</span>
-            <strong>${averageLabel}</strong>
-          </div>
-          <div class="stat">
-            <span>Avaliações analisadas</span>
-            <strong>${totalSamples}</strong>
-          </div>
-          <div class="stat">
-            <span>Fornecedores avaliados</span>
-            <strong>${totalSuppliers}</strong>
-          </div>
-          <div class="stat">
-            <span>Consolidado gerado em</span>
-            <strong>${escapeHtml(generatedLabel || 'N/D')}</strong>
-          </div>
-        </div>
-        <div class="distribution">
-          <div>
-            <span>Aprovados</span>
-            <strong>${distribution.aprovados ?? 0}</strong>
-          </div>
-          <div>
-            <span>Em atenção</span>
-            <strong>${distribution.emAtencao ?? 0}</strong>
-          </div>
-          <div>
-            <span>Reprovados</span>
-            <strong>${distribution.reprovados ?? 0}</strong>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <h2>Resumo da analise</h2>
-        ${narrative}
-      </div>
-      <div class="card">
-        <h2>Fornecedores reprovados</h2>
-        ${buildItemsList(snapshot.reprovados, 'Nenhum fornecedor reprovado neste periodo.')}
-      </div>
-      <div class="card">
-        <h2>Fornecedores em atenção</h2>
-        ${buildItemsList(snapshot.emAtencao, 'Nenhum fornecedor em atenção neste período.')}
-      </div>
-      <div class="card">
-        <h2>Destaques de excelência</h2>
-        ${buildItemsList(snapshot.excelencia, 'Nenhum destaque de excelência registrado para este mês.')}
-      </div>
-      <div class="card">
-        <h2>Panorama resumido</h2>
-        ${buildItemsList(snapshot.panorama, 'Sem dados suficientes para compor o panorama.')}
-      </div>
-      <div class="footer">
-        Este relatório foi enviado automaticamente pela Central de Suprimentos Engeman.
-      </div>
-    </div>
-  </div>
+</div>
 </body>
 </html>`;
 }
@@ -1679,325 +1830,6 @@ function handleSupplierQuery(query) {
   content.appendChild(actions);
 }
 
-function clearEmailPrompt() {
-  if (dom.emailPromptCard?.isConnected) {
-    const wrapper = dom.emailPromptCard.closest('.message');
-    if (wrapper?.parentNode) {
-      wrapper.parentNode.removeChild(wrapper);
-    } else {
-      dom.emailPromptCard.remove();
-    }
-  } else if (dom.messages) {
-    const fallbackCard = dom.messages.querySelector('.email-capture-card');
-    fallbackCard?.closest('.message')?.remove();
-  }
-  dom.emailPromptCard = null;
-  dom.emailPromptForm = null;
-  dom.emailPromptInput = null;
-  dom.emailPromptButton = null;
-  dom.emailPromptStatus = null;
-  state.emailPromptSupplierId = null;
-}
-
-function renderEmailPrompt(supplier) {
-  if (!supplier || !dom.messages) {
-    return;
-  }
-  if (state.emailPromptSupplierId === supplier.id && dom.emailPromptCard?.isConnected) {
-    return;
-  }
-
-  clearEmailPrompt();
-
-  const content = createMessage('bot');
-  const card = document.createElement('div');
-  card.className = 'email-capture-card';
-
-  const title = document.createElement('h4');
-  title.textContent = 'Envio automático do feedback';
-  card.appendChild(title);
-
-  const displayName =
-    supplier.name && supplier.name.trim()
-      ? supplier.name
-      : supplier.code
-      ? 'Fornecedor ' + supplier.code
-      : 'o fornecedor selecionado';
-
-  const description = document.createElement('p');
-  description.innerHTML =
-    'Informe o e-mail de contato de <strong>' +
-    escapeHtml(displayName) +
-    '</strong> para disparar a analise diretamente do painel.';
-  card.appendChild(description);
-
-  const form = document.createElement('form');
-  form.className = 'email-capture-form';
-
-  const input = document.createElement('input');
-  input.type = 'email';
-  input.name = 'supplier-email';
-  input.placeholder = 'contato@fornecedor.com.br';
-  input.autocomplete = 'email';
-  input.inputMode = 'email';
-  input.required = true;
-  input.maxLength = 120;
-
-  const submit = document.createElement('button');
-  submit.type = 'submit';
-  submit.className = 'email-capture-submit';
-  submit.textContent = 'Enviar e-mail';
-
-  const status = document.createElement('span');
-  status.className = 'email-capture-status';
-
-  const canSend = Boolean(EMAIL_API_ENDPOINT);
-  if (!canSend) {
-    input.disabled = true;
-    submit.disabled = true;
-    status.textContent = 'Configure o servidor de envio para habilitar o disparo automático.';
-    status.dataset.state = 'error';
-  } else {
-    status.textContent = 'Digite o e-mail e enviaremos automaticamente o feedback.';
-    status.dataset.state = 'idle';
-  }
-
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const value = input.value.trim();
-    input.setCustomValidity('');
-    if (!value) {
-      input.focus();
-      return;
-    }
-    if (!EMAIL_REGEX.test(value)) {
-      input.setCustomValidity('Informe um e-mail válido.');
-      input.reportValidity();
-      return;
-    }
-    sendSupplierEmail(value);
-  });
-
-  input.addEventListener('input', () => {
-    input.setCustomValidity('');
-    if (status.dataset.state === 'error' && EMAIL_API_ENDPOINT) {
-      status.textContent = 'Digite o e-mail e enviaremos automaticamente o feedback.';
-      status.dataset.state = 'idle';
-    }
-  });
-
-  form.appendChild(input);
-  form.appendChild(submit);
-  card.appendChild(form);
-  card.appendChild(status);
-  content.appendChild(card);
-
-  dom.emailPromptCard = card;
-  dom.emailPromptForm = form;
-  dom.emailPromptInput = input;
-  dom.emailPromptButton = submit;
-  dom.emailPromptStatus = status;
-  state.emailPromptSupplierId = supplier.id;
-
-  if (canSend) {
-    setTimeout(() => {
-      dom.emailPromptInput?.focus();
-    }, 150);
-  }
-}
-
-function setEmailPromptStatus(message, status, supplierId) {
-  if (!dom.emailPromptStatus) {
-    return;
-  }
-  if (supplierId && state.emailPromptSupplierId !== supplierId) {
-    return;
-  }
-  dom.emailPromptStatus.textContent = message;
-  dom.emailPromptStatus.dataset.state = status || 'idle';
-}
-
-function handleEmailPromptSuccess(email, supplierId) {
-  if (state.emailPromptSupplierId !== supplierId) {
-    return;
-  }
-  if (dom.emailPromptInput) {
-    dom.emailPromptInput.value = '';
-  }
-  setEmailPromptStatus('E-mail enviado para ' + email + '.', 'success', supplierId);
-  setTimeout(() => {
-    if (state.emailPromptSupplierId === supplierId && dom.emailPromptStatus?.dataset.state === 'success') {
-      dom.emailPromptStatus.textContent = 'Envie novamente caso precise reenviar o feedback.';
-      dom.emailPromptStatus.dataset.state = 'idle';
-    }
-  }, 5000);
-}
-
-function handleEmailPromptError(supplierId) {
-  if (state.emailPromptSupplierId !== supplierId) {
-    return;
-  }
-  setEmailPromptStatus(
-    'Nao foi possivel enviar. Verifique o servidor de e-mail e tente novamente.',
-    'error',
-    supplierId
-  );
-}
-
-function clearMonthlyEmailPrompt() {
-  if (dom.monthlyEmailPromptCard?.isConnected) {
-    dom.monthlyEmailPromptCard.remove();
-  }
-  dom.monthlyEmailPromptCard = null;
-  dom.monthlyEmailPromptForm = null;
-  dom.monthlyEmailPromptInput = null;
-  dom.monthlyEmailPromptButton = null;
-  dom.monthlyEmailPromptStatus = null;
-  state.monthlyEmailPromptMonthKey = null;
-}
-
-function renderMonthlyEmailPrompt(container, monthKey, monthLabel) {
-  if (!container) {
-    return;
-  }
-  clearMonthlyEmailPrompt();
-
-  const card = document.createElement('div');
-  card.className = 'email-capture-card';
-
-  const title = document.createElement('h4');
-  title.textContent = 'Envio automático do relatório mensal';
-  card.appendChild(title);
-
-  const description = document.createElement('p');
-  const labelText = monthLabel || formatMonthLabel(monthKey);
-  description.innerHTML =
-    'Informe o e-mail do gestor para enviar automaticamente o consolidado de <strong>' +
-    escapeHtml(labelText) +
-    '</strong>.';
-  card.appendChild(description);
-
-  const form = document.createElement('form');
-  form.className = 'email-capture-form';
-
-  const input = document.createElement('input');
-  input.type = 'email';
-  input.name = 'monthly-email';
-  input.placeholder = 'gestor@empresa.com';
-  input.autocomplete = 'email';
-  input.required = true;
-  input.maxLength = 120;
-
-  const submit = document.createElement('button');
-  submit.type = 'submit';
-  submit.className = 'email-capture-submit';
-  submit.textContent = 'Enviar relatório';
-
-  const status = document.createElement('span');
-  status.className = 'email-capture-status';
-
-  form.appendChild(input);
-  form.appendChild(submit);
-  card.appendChild(form);
-  card.appendChild(status);
-  container.appendChild(card);
-
-  dom.monthlyEmailPromptCard = card;
-  dom.monthlyEmailPromptForm = form;
-  dom.monthlyEmailPromptInput = input;
-  dom.monthlyEmailPromptButton = submit;
-  dom.monthlyEmailPromptStatus = status;
-  state.monthlyEmailPromptMonthKey = monthKey;
-
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const value = input.value.trim();
-    input.setCustomValidity('');
-    if (!value) {
-      input.focus();
-      return;
-    }
-    if (!EMAIL_REGEX.test(value)) {
-      input.setCustomValidity('Informe um e-mail válido.');
-      input.reportValidity();
-      return;
-    }
-    sendMonthlyEmail(value);
-  });
-
-  input.addEventListener('input', () => {
-    input.setCustomValidity('');
-  });
-
-  refreshMonthlyEmailPromptState();
-}
-
-function refreshMonthlyEmailPromptState() {
-  if (!dom.monthlyEmailPromptStatus || !dom.monthlyEmailPromptInput || !dom.monthlyEmailPromptButton) {
-    return;
-  }
-  const monthMatches = state.monthlyEmailPromptMonthKey && state.selectedMonthKey === state.monthlyEmailPromptMonthKey;
-  const canSendEndpoint = Boolean(EMAIL_API_ENDPOINT);
-  const hasNarrative = Boolean(state.lastMonthlyNarrativeHtml && monthMatches);
-
-  if (!canSendEndpoint) {
-    dom.monthlyEmailPromptInput.disabled = true;
-    dom.monthlyEmailPromptButton.disabled = true;
-    dom.monthlyEmailPromptStatus.textContent =
-      'Configure o endpoint de e-mail para liberar o envio do relatório mensal.';
-    dom.monthlyEmailPromptStatus.dataset.state = 'error';
-    return;
-  }
-
-  if (!monthMatches) {
-    dom.monthlyEmailPromptInput.disabled = true;
-    dom.monthlyEmailPromptButton.disabled = true;
-    dom.monthlyEmailPromptStatus.textContent =
-      'Selecione um mês para habilitar o envio do relatório correspondente.';
-    dom.monthlyEmailPromptStatus.dataset.state = 'idle';
-    return;
-  }
-
-  if (!hasNarrative) {
-    dom.monthlyEmailPromptInput.disabled = true;
-    dom.monthlyEmailPromptButton.disabled = true;
-    dom.monthlyEmailPromptStatus.textContent =
-      'Aguarde o resumo com IA finalizar para liberar o envio automático.';
-    dom.monthlyEmailPromptStatus.dataset.state = 'idle';
-    return;
-  }
-
-  dom.monthlyEmailPromptInput.disabled = false;
-  dom.monthlyEmailPromptButton.disabled = false;
-  dom.monthlyEmailPromptStatus.textContent = 'Digite o e-mail e enviaremos o relatório mensal automaticamente.';
-  dom.monthlyEmailPromptStatus.dataset.state = 'idle';
-}
-
-function setMonthlyEmailStatus(message, status) {
-  if (!dom.monthlyEmailPromptStatus) {
-    return;
-  }
-  dom.monthlyEmailPromptStatus.textContent = message;
-  dom.monthlyEmailPromptStatus.dataset.state = status || 'idle';
-}
-
-function handleMonthlyEmailSuccess(email) {
-  if (!dom.monthlyEmailPromptInput || !dom.monthlyEmailPromptStatus) {
-    return;
-  }
-  dom.monthlyEmailPromptInput.value = '';
-  setMonthlyEmailStatus('Relatório enviado para ' + email + '.', 'success');
-  setTimeout(() => {
-    if (dom.monthlyEmailPromptStatus?.dataset.state === 'success') {
-      setMonthlyEmailStatus('Envie novamente caso precise reenviar o relatório.', 'idle');
-    }
-  }, 5000);
-}
-
-function handleMonthlyEmailError() {
-  setMonthlyEmailStatus('Nao foi possivel enviar o relatório mensal. Tente novamente mais tarde.', 'error');
-}
-
 function sendSupplierEmail(email) {
   if (!state.selectedSupplier) {
     appendBotMessage('Selecione um fornecedor antes de informar o e-mail para envio.', true);
@@ -2016,13 +1848,8 @@ function sendSupplierEmail(email) {
   }
   if (!EMAIL_API_ENDPOINT) {
     appendBotMessage(
-      'O envio automatico de e-mail nao esta configurado. Verifique se o servidor de envio esta em execucao.',
+      'O envio automatico de e-mail nao esta configurado. Defina window.EMAIL_API_ENDPOINT antes de utilizar esta funcionalidade.',
       true
-    );
-    setEmailPromptStatus(
-      'Envio automatico indisponivel. Configure o servidor antes de prosseguir.',
-      'error',
-      state.selectedSupplier.id
     );
     return;
   }
@@ -2034,11 +1861,11 @@ function sendSupplierEmail(email) {
     ? subjectTemplate.replace(/{{fornecedor}}/gi, displayName)
     : subjectTemplate + ' - ' + displayName;
 
+  const narrative = buildEmailNarrative(supplier);
   const analysisHtml = state.lastFeedbackHtml || '<p>Analise da IA indisponivel.</p>';
-  const emailHtml = buildEmailHtml(supplier, analysisHtml);
+  const emailHtml = buildEmailHtml(supplier, narrative.html, analysisHtml);
   const plainTextBody = htmlToPlainText(emailHtml);
   state.lastEmailHtml = emailHtml;
-  setEmailPromptStatus('Enviando e-mail automaticamente...', 'sending', supplier.id);
 
   const payload = {
     to: email,
@@ -2085,7 +1912,6 @@ function sendSupplierEmail(email) {
           '</strong>. <button type="button" class="inline-link" onclick="previewEmailTemplate()">Ver layout completo</button>',
         true
       );
-      handleEmailPromptSuccess(email, supplier.id);
     })
     .catch((error) => {
       console.error('[analise:send-email]', error);
@@ -2094,96 +1920,6 @@ function sendSupplierEmail(email) {
         'Nao foi possivel concluir o envio automatico. Verifique a configuracao do endpoint de e-mail e tente novamente.',
         true
       );
-      handleEmailPromptError(supplier.id);
-    });
-}
-
-function sendMonthlyEmail(email) {
-  if (!state.selectedMonthKey || !state.monthlySnapshot) {
-    appendBotMessage('Selecione um mês nos indicadores mensais para preparar o relatório antes do envio.', true);
-    return;
-  }
-  if (!state.lastMonthlyNarrativeHtml) {
-    appendBotMessage(
-      'Aguarde o resumo com IA concluir para enviar o relatório mensal automaticamente.',
-      true
-    );
-    return;
-  }
-  if (!EMAIL_API_ENDPOINT) {
-    appendBotMessage(
-      'O envio automático de e-mail não está configurado. Verifique se o servidor está em execução.',
-      true
-    );
-    handleMonthlyEmailError();
-    return;
-  }
-
-  const snapshot = state.monthlySnapshot;
-  const monthLabel = snapshot.monthLabel || formatMonthLabel(snapshot.monthKey);
-  const template = state.monthlySubjectTemplate || 'Relatorio IQF Mensal - {{mes}}';
-  const subject = template.includes('{{mes}}')
-    ? template.replace(/{{mes}}/gi, monthLabel)
-    : template + ' - ' + monthLabel;
-
-  const emailHtml = buildMonthlyEmailHtml(snapshot, state.lastMonthlyNarrativeHtml);
-  const plainTextBody = htmlToPlainText(emailHtml);
-
-  state.lastMonthlyEmailHtml = emailHtml;
-  state.lastEmailHtml = emailHtml;
-  setMonthlyEmailStatus('Enviando relatório mensal...', 'sending');
-
-  const payload = {
-    to: email,
-    subject,
-    html: emailHtml,
-    text: plainTextBody,
-    reportType: 'monthly',
-    month: snapshot.monthKey,
-    monthLabel: snapshot.monthLabel,
-    totals: snapshot.totals,
-    distribution: snapshot.distribution,
-    generatedAt: new Date().toISOString()
-  };
-
-  const headers = { 'Content-Type': 'application/json' };
-  if (EMAIL_API_TOKEN) {
-    headers.Authorization = 'Bearer ' + EMAIL_API_TOKEN;
-  }
-
-  fetch(EMAIL_API_ENDPOINT, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload)
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.text().then((text) => {
-          throw new Error(text || 'Falha ao enviar o relatório.');
-        });
-      }
-      return response.json().catch(() => ({}));
-    })
-    .then(() => {
-      showToast('Relatório mensal enviado com sucesso!');
-      appendBotMessage(
-        'Relatório de <strong>' +
-          escapeHtml(monthLabel) +
-          '</strong> enviado automaticamente para <strong>' +
-          escapeHtml(email) +
-          '</strong>. <button type="button" class="inline-link" onclick="previewEmailTemplate()">Ver layout completo</button>',
-        true
-      );
-      handleMonthlyEmailSuccess(email);
-    })
-    .catch((error) => {
-      console.error('[analise:send-monthly-email]', error);
-      showToast('Falha ao enviar o relatório mensal.');
-      appendBotMessage(
-        'Nao foi possivel concluir o envio do relatório mensal. Verifique o servidor de e-mail e tente novamente.',
-        true
-      );
-      handleMonthlyEmailError();
     });
 }
 
@@ -2220,7 +1956,7 @@ function handleIndicadoresMensais() {
 function renderMonthlyAnalysis(monthKey) {
   const monthEntry = state.monthlySummary && typeof state.monthlySummary.get === 'function' ? state.monthlySummary.get(monthKey) : null;
   if (!monthEntry) {
-    appendBotMessage('Dados não encontrados para o periodo selecionado. Atualize os arquivos de origem e tente novamente.', true);
+    appendBotMessage('Dados nao encontrados para o periodo selecionado. Atualize os arquivos de origem e tente novamente.', true);
     return;
   }
 
@@ -2259,30 +1995,6 @@ function renderMonthlyAnalysis(monthKey) {
     .filter((item) => item.avg !== null && item.avg >= 85)
     .sort((a, b) => b.avg - a.avg)
     .slice(0, 5);
-
-  state.selectedMonthKey = monthKey;
-  state.lastMonthlyNarrativeHtml = '';
-  state.lastMonthlyEmailHtml = '';
-  state.monthlySnapshot = {
-    monthKey,
-    monthLabel,
-    generatedAt: new Date().toISOString(),
-    totals: {
-      totalSuppliers,
-      totalSamples,
-      globalAverage
-    },
-    distribution: {
-      aprovados: aprovados.length,
-      emAtencao: emAtencao.length,
-      reprovados: reprovados.length
-    },
-    reprovados: serializeMonthlyItems(reprovados, 20),
-    emAtencao: serializeMonthlyItems(emAtencao, 20),
-    excelencia: serializeMonthlyItems(excelencia, 10),
-    panorama: serializeMonthlyItems(supplierSummaries, 25)
-  };
-  clearMonthlyEmailPrompt();
 
   const container = createMessage('bot');
   const summaryCard = document.createElement('div');
@@ -2364,7 +2076,7 @@ function renderMonthlyAnalysis(monthKey) {
     buildListSection(
       'Fornecedores em atenção (70 ≤ IQF ≤ 75)',
       emAtencao.slice(0, 10),
-      'Nenhum fornecedor em estado de atenção neste período.',
+      'Nenhum fornecedor em estado de atenção neste periodo.',
       'monthly-subsection-warning'
     )
   );
@@ -2390,105 +2102,61 @@ function renderMonthlyAnalysis(monthKey) {
     title: 'Resumo estratégico com IA',
     subtitle: 'Gerado a partir do IQF mensal',
     icon: '🧠',
-    bodyHtml: '<p>Gerando análise detalhada, aguarde alguns segundos...</p>',
+    bodyHtml: '<p>Gerando analise detalhada, aguarde alguns segundos...</p>',
     hint: 'Aguarde enquanto consultamos o modelo de IA.'
   });
   container.appendChild(aiCard);
 
   generateMonthlyNarrative(monthKey, monthEntry, supplierSummaries, aiCard);
-  renderMonthlyEmailPrompt(container, monthKey, monthLabel);
 }
 
 
-
-function serializeMonthlyItems(list, limit) {
-  if (!Array.isArray(list)) {
-    return [];
-  }
-  const max = typeof limit === 'number' ? limit : list.length;
-  return list.slice(0, max).map((item) => ({
-    name: item.name,
-    code: item.code || null,
-    status: item.status || 'Pendente',
-    avg: Number.isFinite(item.avg) ? item.avg : null,
-    count: item.count || 0
-  }));
-}
 
 function generateMonthlyNarrative(monthKey, monthEntry, supplierSummaries, cardNode) {
   if (!cardNode) {
     return;
   }
+<<<<<<< HEAD
+  const apiKey = getGeminiApiKey();
+  // Não precisa mais de chave obrigatória - usa Hugging Face como fallback
+=======
   const apiKey = getOpenAiApiKey();
   if (!apiKey) {
     renderFeedbackCard(cardNode, {
       title: 'Resumo estratégico com IA',
       subtitle: 'Configure a chave da API para continuar',
       icon: '🔒',
-      bodyHtml: '<p>Informe a chave da API OpenAI no painel de configuracoes (icone de engrenagem) para gerar a analise mensal automaticamente.</p>'
+      bodyHtml: '<p>Informe a chave da API OpenAI no campo acima do chat para gerar a analise mensal automaticamente.</p>'
     });
-    showToast('Abra o painel de configuracoes (icone de engrenagem) e cole a chave da API OpenAI para gerar o resumo mensal.');
+    showToast('Cole a chave da API OpenAI no topo do chat para gerar o resumo mensal.');
     if (dom.apiKeyInput) {
       dom.apiKeyInput.focus();
     }
-    state.lastMonthlyNarrativeHtml = '';
-    refreshMonthlyEmailPromptState();
     return;
   }
+>>>>>>> 0d91317 (Ajuste necessários no indicador)
   const prompt = buildMonthlyPrompt(monthKey, monthEntry, supplierSummaries);
-  fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + apiKey
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      temperature: 0.2,
-      messages: [
-        { role: 'system', content: 'Você é um especialista em performance de fornecedores.' },
-        { role: 'user', content: prompt }
-      ]
-    })
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.text().then((text) => {
-          throw new Error(text || 'Falha ao consultar a API');
-        });
-      }
-      return response.json();
-    })
-    .then((payload) => {
-      const answer = payload?.choices?.[0]?.message?.content?.trim();
-      if (!answer) {
-        throw new Error('Resposta vazia da API');
-      }
-      const formatted = formatFeedback(answer);
-      if (state.selectedMonthKey === monthKey) {
-        state.lastMonthlyNarrativeHtml = formatted;
-        state.lastMonthlyEmailHtml = '';
-        refreshMonthlyEmailPromptState();
-      }
+  callGeminiAPI(
+    'Você é um especialista em performance de fornecedores.',
+    prompt,
+    { temperature: 0.2 }
+  )
+    .then((answer) => {
       renderFeedbackCard(cardNode, {
         title: 'Resumo estratégico com IA',
-        subtitle: 'Complementado com IA (GPT-4o mini)',
+        subtitle: 'Complementado com IA (Google Gemini)',
         icon: '🤖',
-        bodyHtml: formatted
+        bodyHtml: formatFeedback(answer)
       });
     })
     .catch((error) => {
-      console.error('[analise:monthly-gpt]', error);
+      console.error('[analise:monthly-gemini]', error);
       renderFeedbackCard(cardNode, {
         title: 'Resumo estratégico com IA',
         subtitle: 'Nao foi possivel atualizar agora',
         icon: '⚠️',
-        bodyHtml: '<p>Não foi possível gerar a análise neste momento. Tente novamente em instantes ou verifique a chave da API.</p>'
+        bodyHtml: '<p>Nao foi possivel gerar a analise neste momento. Tente novamente em instantes ou verifique a chave da API.</p>'
       });
-      if (state.selectedMonthKey === monthKey) {
-        state.lastMonthlyNarrativeHtml = '';
-        refreshMonthlyEmailPromptState();
-      }
     });
 }
 
@@ -2509,7 +2177,7 @@ function buildMonthlyPrompt(monthKey, monthEntry, supplierSummaries) {
         .slice(0, 20)
         .map((item) => '- ' + item.name + ' | média ' + formatScoreValue(item.avg) + ' | avaliações ' + item.count)
         .join('\n')
-    : '- Nenhum fornecedor reprovado no período.';
+    : '- Nenhum fornecedor reprovado no periodo.';
 
   const atencaoLines = emAtencao.length
     ? emAtencao
@@ -2566,7 +2234,7 @@ function handleContactBase() {
       '<p>Iran Victor.</p>',
       '<p><strong>4️⃣ FILIAL FAFEN ( BA E SE ):</strong></p>',
       '<p><strong>Compradores:</strong></p>',
-      '<p>Jennyfer, Gilberto, Iran, Pryscila.</p>',
+      '<p>Jennyfer.</p>',
       '<p><strong>5️⃣ FILIAL SÃO PAULO:</strong></p>',
       '<p><strong>Compradores:</strong></p>',
       '<p>Gilberto Trajano.</p>'
