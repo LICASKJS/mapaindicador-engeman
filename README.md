@@ -1,6 +1,6 @@
 # Mapa indicador de Suprimentos 2026
 
-Este projeto reune a interface web e a API Node responsavel por ler os dados dos fornecedores, gerar os feedbacks com IA e enviar automaticamente os e-mails.
+Este projeto reune a interface web e a API Node responsavel por ler os dados dos fornecedores, gerar os feedbacks com IA (usando Google Gemini) e enviar automaticamente os e-mails.
 
 ## Como executar localmente
 1. Instale as dependencias:
@@ -36,3 +36,15 @@ Os modelos enviados são objetivos e independem dos cards da interface. Cada um 
 - Lista de ocorrencias mais recentes (ou indicacao de ausencia).
 
 Para os indicadores mensais, o relatório reúne a média global, distribuição por status, destaques (reprovados/atenção/excelência) e o resumo estratégico gerado pela IA. Ambos os fluxos podem ser disparados automaticamente pela própria tela de análise.
+
+## Configuração da API de IA
+
+O sistema utiliza a API do Google Gemini (gratuita) para gerar análises de fornecedores. Para habilitar as funcionalidades de IA:
+
+1. Obtenha uma chave de API gratuita em: https://makersuite.google.com/app/apikey
+2. Acesse a tela de análise (`analise.html`)
+3. Clique no ícone de engrenagem (⚙️) para abrir as configurações
+4. Cole sua chave do Google Gemini no campo "Chave Google Gemini"
+5. Clique em "Aplicar chave"
+
+A chave é armazenada apenas no navegador (localStorage) e não é enviada para nenhum servidor externo além da API do Google Gemini.

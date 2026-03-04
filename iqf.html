@@ -21,17 +21,6 @@
             <div class="logo-container">
                 <img src="img/logo-branca.png" alt="Logo Engeman" class="logo">
             </div>
-            <nav class="nav-menu">
-                <a href="index.html" class="nav-link">Visão Geral</a>
-                <a href="iqf.html" class="nav-link active">IQF Fornecedores</a>
-                <a href="ocorrencias.html" class="nav-link">Ocorrências</a>
-                <a href="analise.html" target="_blank" rel="noopener" class="btn-primary telegram-link">
-                    Gerar Análise
-                    <svg class="icon" viewBox="0 0 25 25" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 12h13M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </a> 
-            </nav>
         </div>
     </header>
 
@@ -97,7 +86,20 @@
 
                 <div class="iqf-grid">
                     <div class="iqf-summary-card">
-                        <h3>Resumo IQF</h3>
+                        <div class="chart-header">
+                            <h3>Resumo IQF</h3>
+                            <!-- sistema de exportação visual -->
+                            <div class="export-wrapper">
+                                <button type="button" class="export-trigger" aria-label="Exportar resumo IQF">
+                                    <span>Exportar</span>
+                                </button>
+                                <div class="export-menu" aria-hidden="true">
+                                    <button type="button" class="export-pill">PDF</button>
+                                    <button type="button" class="export-pill">Excel</button>
+                                    <button type="button" class="export-pill">CSV</button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="iqf-metrics">
                             <div class="metric">
                                 <span class="metric-label">Média Geral</span>
@@ -117,6 +119,16 @@
                     <div class="chart-card chart-wide">
                         <div class="chart-header">
                             <h3>Gráfico IQF Mensal </h3>
+                            <div class="export-wrapper">
+                                <button type="button" class="export-trigger" aria-label="Exportar gráfico IQF mensal">
+                                    <span>Exportar</span>
+                                </button>
+                                <div class="export-menu" aria-hidden="true">
+                                    <button type="button" class="export-pill">PDF</button>
+                                    <button type="button" class="export-pill">Excel</button>
+                                    <button type="button" class="export-pill">CSV</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="chart-wrapper">
                             <canvas id="iqfMonthlyChart"></canvas>
@@ -166,10 +178,25 @@
             </div>
         </section>
     </main>
+
+    <nav class="bottom-dock" role="navigation" aria-label="Navegação principal">
+        <div class="bottom-dock-inner">
+            <div class="bottom-dock-nav">
+                <a href="index.html">Visão Geral</a>
+                <a href="iqf.html" class="active">IQF Fornecedores</a>
+                <a href="ocorrencias.html">Ocorrências</a>
+            </div>
+            <div class="bottom-dock-cta">
+                <a href="analise.html" target="_blank" rel="noopener" class="btn-primary telegram-link">
+                    Gerar Análise
+                    <svg class="icon" viewBox="0 0 25 25" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 12h13M14 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
             </div>
         </div>
-    </div>
+    </nav>
 
-        <script src="js/script.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>
