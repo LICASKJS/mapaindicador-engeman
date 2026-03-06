@@ -685,6 +685,20 @@ body {
   color: var(--text-primary);
 }
 
+.table-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+  font-weight: 500;
+}
+
+.consolidado-filters {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
 .table-filters {
   display: flex;
   gap: 1rem;
