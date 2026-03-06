@@ -104,7 +104,8 @@ const charts = {
   gauge: null,
   trend: null,
   iqf: null,
-  occ: null
+  occ: null,
+  annualInspections: null
 };
 
 const chatState = {
@@ -278,7 +279,9 @@ function parseWorkbookRows(buffer) {
 function mapHomolog(row) {
   const normalized = normalizeKeys(row);
   const code = toId(normalized.codigo || normalized.codagente || normalized.codfornecedor || normalized.id);
-  const name = safeString(normalized.nomefantasia || normalized.agente || normalized.fornecedor || normalized.nome);
+  const name = safeString(
+    normalized.razaosocial || normalized.nomefantasia || normalized.agente || normalized.fornecedor || normalized.nome
+  );
   if (!code && !name) {
     return null;
   }
@@ -290,15 +293,35 @@ function mapHomolog(row) {
 
 function mapIqf(row) {
   const normalized = normalizeKeys(row);
+  const dateEmissao = toISODate(
+    normalized.dataemissao || normalized.data || normalized.datamedicao || normalized.datageracao
+  );
+  let situacaoLaudo = mapSituacaoLaudo(
+    normalized.situacaolaudo || normalized.situacao || normalized.statuslaudo || normalized.resultado
+  );
+  const iqfVal = toNumber(normalized.nota || normalized.notaiqf || normalized.iqf);
+  if (!situacaoLaudo && iqfVal !== null) {
+    situacaoLaudo = iqfVal >= SCORE_THRESHOLD ? 'APROVADO' : 'REPROVADO';
+  }
   return {
     code: toId(normalized.codagente || normalized.codigo || normalized.codfornecedor || normalized.id),
     name: safeString(normalized.nomeagente || normalized.fornecedor || normalized.nome),
-    iqf: toNumber(normalized.nota || normalized.notaiqf || normalized.iqf),
-    date: toISODate(normalized.data || normalized.datamedicao || normalized.datageracao),
+    iqf: iqfVal,
+    date: dateEmissao,
+    dateEmissao,
+    situacaoLaudo,
     document: safeString(normalized.documento || normalized.numerodocumento || normalized.doc),
     occ: safeString(normalized.observacao || normalized.ocorrencia || normalized.comentario || normalized.notaocorrencia),
     origin: safeString(normalized.origem || normalized.tipo || normalized.classificacao)
   };
+}
+
+function mapSituacaoLaudo(value) {
+  const normalized = normalizeText(value);
+  if (!normalized) return null;
+  if (['aprovado', 'aprovada', 's', 'sim', 'conforme', 'ok'].includes(normalized)) return 'APROVADO';
+  if (['reprovado', 'reprovada', 'n', 'nao', 'nao conforme', 'nc'].includes(normalized)) return 'REPROVADO';
+  return normalized.toUpperCase();
 }
 
 function buildState() {
@@ -384,6 +407,112 @@ function buildState() {
     }));
   state.occFiltered = state.occ.slice();
   state.monthlyIqf = aggregateMonthly(state.iqf);
+  buildAnnualConsolidado();
+}
+
+function buildAnnualConsolidado() {
+  const homologNames = new Set();
+  state.homolog.forEach((h) => {
+    const key = normalizeText(h.name || '');
+    if (key) homologNames.add(key);
+  });
+
+  const supplierStats = new Map();
+  state.iqf.forEach((row) => {
+    const key = normalizeText(row.name || '');
+    if (!key) return;
+    if (!supplierStats.has(key)) {
+      supplierStats.set(key, {
+        name: row.name,
+        total: 0,
+        aprovados: 0,
+        reprovados: 0
+      });
+    }
+    const stat = supplierStats.get(key);
+    stat.total += 1;
+    const sit = (row.situacaoLaudo || '').toUpperCase();
+    if (sit === 'APROVADO') stat.aprovados += 1;
+    else if (sit === 'REPROVADO') stat.reprovados += 1;
+  });
+
+  const naoHomologados = new Set();
+  supplierStats.forEach((stat, key) => {
+    if (!homologNames.has(key)) naoHomologados.add(stat.name);
+  });
+
+  const monthlyInspections = new Map();
+  state.iqf.forEach((row) => {
+    const iso = row.dateEmissao || row.date;
+    if (!iso || iso.length < 7) return;
+    const monthKey = iso.slice(0, 7);
+    monthlyInspections.set(monthKey, (monthlyInspections.get(monthKey) || 0) + 1);
+  });
+
+  const totalLaudos = state.iqf.length;
+  const totalAprovados = state.iqf.filter((r) => (r.situacaoLaudo || '').toUpperCase() === 'APROVADO').length;
+  const aprovacaoGlobal = totalLaudos ? (totalAprovados / totalLaudos) * 100 : null;
+
+  state.annualConsolidado = {
+    totalLaudos,
+    totalAprovados,
+    aprovacaoGlobal,
+    naoHomologadosCount: naoHomologados.size,
+    naoHomologados: Array.from(naoHomologados),
+    supplierStats: Array.from(supplierStats.values()),
+    monthlyInspections: Array.from(monthlyInspections.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  };
+}
+
+function computeAnnualDataFiltered(year) {
+  if (!state.annualConsolidado) return null;
+  if (!year) return state.annualConsolidado;
+  const prefix = String(year) + '-';
+  const iqfYear = state.iqf.filter((r) => {
+    const iso = r.dateEmissao || r.date;
+    return iso && iso.startsWith(prefix);
+  });
+  const homologNames = new Set();
+  state.homolog.forEach((h) => {
+    const key = normalizeText(h.name || '');
+    if (key) homologNames.add(key);
+  });
+  const supplierStats = new Map();
+  iqfYear.forEach((row) => {
+    const key = normalizeText(row.name || '');
+    if (!key) return;
+    if (!supplierStats.has(key)) {
+      supplierStats.set(key, { name: row.name, total: 0, aprovados: 0, reprovados: 0 });
+    }
+    const stat = supplierStats.get(key);
+    stat.total += 1;
+    const sit = (row.situacaoLaudo || '').toUpperCase();
+    if (sit === 'APROVADO') stat.aprovados += 1;
+    else if (sit === 'REPROVADO') stat.reprovados += 1;
+  });
+  const naoHomologados = new Set();
+  supplierStats.forEach((stat, key) => {
+    if (!homologNames.has(key)) naoHomologados.add(stat.name);
+  });
+  const monthlyInspections = new Map();
+  iqfYear.forEach((row) => {
+    const iso = row.dateEmissao || row.date;
+    if (!iso || iso.length < 7) return;
+    const monthKey = iso.slice(0, 7);
+    monthlyInspections.set(monthKey, (monthlyInspections.get(monthKey) || 0) + 1);
+  });
+  const totalLaudos = iqfYear.length;
+  const totalAprovados = iqfYear.filter((r) => (r.situacaoLaudo || '').toUpperCase() === 'APROVADO').length;
+  const aprovacaoGlobal = totalLaudos ? (totalAprovados / totalLaudos) * 100 : null;
+  return {
+    totalLaudos,
+    totalAprovados,
+    aprovacaoGlobal,
+    naoHomologadosCount: naoHomologados.size,
+    naoHomologados: Array.from(naoHomologados),
+    supplierStats: Array.from(supplierStats.values()),
+    monthlyInspections: Array.from(monthlyInspections.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  };
 }
 
 function aggregateMonthly(rows) {
@@ -574,6 +703,13 @@ function bindControls() {
   if (recurrenceFilter) {
     recurrenceFilter.addEventListener('change', handleRecurrenceFilterChange);
   }
+
+  const annualYearFilter = document.getElementById('annualYearFilter');
+  if (annualYearFilter) {
+    annualYearFilter.addEventListener('change', () => {
+      renderConsolidadoAnualPage();
+    });
+  }
 }
 
 function getAvailableMonthKeys() {
@@ -634,6 +770,9 @@ function renderAll() {
   }
   if (document.getElementById('occurrencesTable')) {
     renderOccurrencesPage();
+  }
+  if (document.getElementById('annualAuditTable')) {
+    renderConsolidadoAnualPage();
   }
 }
 
@@ -1165,6 +1304,144 @@ function renderIqfChart() {
       }
     }
   });
+}
+
+function renderConsolidadoAnualPage() {
+  const data = computeAnnualDataFiltered(
+    document.getElementById('annualYearFilter')?.value || null
+  );
+  if (!data) {
+    setText('annualTotalLaudos', '--');
+    setText('annualAprovacaoGlobal', '--');
+    setText('annualNaoHomologados', '--');
+    const body = document.querySelector('#annualAuditTable tbody');
+    if (body) body.innerHTML = '<tr><td colspan="5">Carregue as planilhas para visualizar o consolidado.</td></tr>';
+    if (charts.annualInspections) {
+      charts.annualInspections.destroy();
+      charts.annualInspections = null;
+    }
+    return;
+  }
+
+  setText('annualTotalLaudos', String(data.totalLaudos));
+  setText('annualAprovacaoGlobal', data.aprovacaoGlobal !== null ? formatPercent(data.aprovacaoGlobal) : '--');
+  setText('annualNaoHomologados', String(data.naoHomologadosCount));
+
+  populateAnnualYearFilter();
+  renderAnnualInspectionsChart(data);
+  renderAnnualAuditTable(data);
+}
+
+function populateAnnualYearFilter() {
+  const select = document.getElementById('annualYearFilter');
+  if (!select) return;
+  const years = new Set();
+  state.iqf.forEach((row) => {
+    const iso = row.dateEmissao || row.date;
+    if (iso && iso.length >= 4) years.add(iso.slice(0, 4));
+  });
+  const sorted = Array.from(years).sort((a, b) => b.localeCompare(a));
+  const current = select.value;
+  select.innerHTML =
+    '<option value="">Todos os anos</option>' +
+    sorted.map((y) => '<option value="' + y + '">' + y + '</option>').join('');
+  if (current && sorted.includes(current)) select.value = current;
+}
+
+function renderAnnualInspectionsChart(data) {
+  const canvas = document.getElementById('annualInspectionsChart');
+  if (!canvas || typeof Chart === 'undefined') return;
+  const entries = data.monthlyInspections || [];
+  const labels = entries.map(([k]) => formatMonth(k));
+  const values = entries.map(([, v]) => v);
+  if (charts.annualInspections) charts.annualInspections.destroy();
+  if (!labels.length) return;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height || 300);
+  gradient.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+  gradient.addColorStop(1, 'rgba(239, 68, 68, 0.05)');
+  charts.annualInspections = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Inspeções',
+          data: values,
+          borderColor: '#ef4444',
+          borderWidth: 3,
+          backgroundColor: gradient,
+          tension: 0.35,
+          fill: true,
+          pointRadius: 4,
+          pointHoverRadius: 7,
+          pointBackgroundColor: '#ef4444',
+          pointBorderColor: '#ef4444'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => 'Inspeções: ' + ctx.parsed.y
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(148, 163, 184, 0.15)' },
+          ticks: { color: 'var(--text-secondary)' }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(148, 163, 184, 0.15)' },
+          ticks: { color: 'var(--text-secondary)' }
+        }
+      }
+    }
+  });
+}
+
+function renderAnnualAuditTable(data) {
+  const body = document.querySelector('#annualAuditTable tbody');
+  if (!body) return;
+  const homologNames = new Set();
+  state.homolog.forEach((h) => {
+    const key = normalizeText(h.name || '');
+    if (key) homologNames.add(key);
+  });
+  const top5 = data.supplierStats
+    .filter((s) => s.reprovados > 0)
+    .map((s) => ({
+      ...s,
+      pctReprovacao: s.total ? (s.reprovados / s.total) * 100 : 0,
+      compliance: homologNames.has(normalizeText(s.name || '')) ? 'Homologado' : 'Risco de Compliance'
+    }))
+    .sort((a, b) => b.pctReprovacao - a.pctReprovacao)
+    .slice(0, 5);
+  if (!top5.length) {
+    body.innerHTML = '<tr><td colspan="5">Nenhum fornecedor com reprovações para ação imediata.</td></tr>';
+    return;
+  }
+  body.innerHTML = top5
+    .map(
+      (row) =>
+        '<tr class="row-rejected">' +
+        '<td>' + escapeHtml(row.name || '---') + '</td>' +
+        '<td>' + row.total + '</td>' +
+        '<td>' + row.reprovados + '</td>' +
+        '<td>' + formatPercent(row.pctReprovacao) + '</td>' +
+        '<td><span class="status-badge ' +
+        (row.compliance === 'Risco de Compliance' ? 'status-reprovado' : 'status-homologado') +
+        '">' +
+        escapeHtml(row.compliance) +
+        '</span></td></tr>'
+    )
+    .join('');
 }
 
 function renderOccurrencesPage() {
